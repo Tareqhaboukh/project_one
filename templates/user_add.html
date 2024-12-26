@@ -1,0 +1,33 @@
+<p>Add user or <a href="{{ url_for('users') }}">back to user list</a></p>
+
+{% for message in get_flashed_messages() %}
+    {{ message }}
+{% endfor %}
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div>
+        {{ form.username.label }}
+        {{ form.username }}
+        <br>
+
+        {{ form.first_name.label }}
+        {{ form.first_name }}
+        <br>
+
+        {{ form.last_name.label }}
+        {{ form.last_name }}
+        <br>
+
+        {{ form.email.label }}
+        {{ form.email }}
+        <br>
+
+        {{ form.password.label }}
+        {{ form.password }}
+        <br>
+
+        {{ form.submit }} <br>
+    </div>
+</form>

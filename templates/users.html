@@ -1,0 +1,15 @@
+{% for message in get_flashed_messages() %}
+    {{ message }}<br>
+{% endfor %}
+
+<p>Users: (<a href="{{ url_for('user_add') }}">add user</a>)</p>
+{% if users %}
+
+    {% for user in users %}
+        <a href="{{ url_for('user_profile', id=user.id) }}">{{ user.first_name }} {{ user.last_name }} - {{ user.username }}</a><br>
+    {% endfor %}
+
+    {% else %}
+        <p>no users in the database</p><br>
+
+{% endif %}

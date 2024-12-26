@@ -1,0 +1,21 @@
+{% for message in get_flashed_messages() %}
+    {{ message }}
+{% endfor %}
+
+<h1>Welcome {{ user_profile.first_name | title }} {{ user_profile.last_name | title}}!</h1>
+<h2>Your username is: {{ user_profile.username }}</h2>
+<p>Password hash: <br> {{ user_profile.password_hash }}</p>
+<p>Time created: {{ user_profile.date_created }}</p>
+
+<form method="POST">
+    {{ form.hidden_tag() }}
+
+    {{ form.password.label }}
+    {{ form.password }}
+    <br>
+
+    {{ form.submit }} <br>
+</form>
+<a href="{{ url_for('users') }}">back to users list</a><p>or</p>
+<a href="{{ url_for('user_edit', id=user_profile.id) }}">edit user details</a><br>
+<a href="{{ url_for('user_delete', id=user_profile.id) }}">delete user</a><br>
