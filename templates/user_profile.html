@@ -2,10 +2,10 @@
     {{ message }}
 {% endfor %}
 
-<h1>Welcome {{ user_profile.first_name | title }} {{ user_profile.last_name | title}}!</h1>
-<h2>Your username is: {{ user_profile.username }}</h2>
-<p>Password hash: <br> {{ user_profile.password_hash }}</p>
-<p>Time created: {{ user_profile.date_created }}</p>
+<h1>Welcome {{ current_user.first_name | title }} {{ current_user.last_name | title}}!</h1>
+<h2>Your username is: {{ current_user.username }}</h2>
+<p>Password hash: <br> {{ current_user.password_hash }}</p>
+<p>Time created: {{ current_user.date_created }}</p>
 
 <form method="POST">
     {{ form.hidden_tag() }}
@@ -16,6 +16,10 @@
 
     {{ form.submit }} <br>
 </form>
-<a href="{{ url_for('users') }}">back to users list</a><p>or</p>
-<a href="{{ url_for('user_edit', id=user_profile.id) }}">edit user details</a><br>
-<a href="{{ url_for('user_delete', id=user_profile.id) }}">delete user</a><br>
+<ul>
+    <li><a href="{{ url_for('users') }}">users list</a></li>
+    <li><a href="{{ url_for('user_edit') }}">edit user</a></li>
+    <li><a href="{{ url_for('change_password') }}">change password</a></li>
+    <li><a href="{{ url_for('user_delete', id=current_user.id) }}">delete user</a></li>
+    <li><a href="{{ url_for('logout') }}">logout</a></li>
+</ul>

@@ -1,12 +1,11 @@
 from flask import Flask, request, redirect, render_template, url_for, flash
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, DateTimeField
-from wtforms.validators import DataRequired, Email
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from forms import *
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timezone
 from dotenv import load_dotenv
+from flask_login import LoginManager, UserMixin, current_user , login_user, login_required, logout_user
+from datetime import datetime, timezone
 import os
 
 load_dotenv()
@@ -19,7 +18,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-class Users(db.Model):
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def user_load(user_id):
+    return Users.query.get_or_404(int(user_id))
+
+class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     first_name = db.Column(db.String(80), nullable=False)
@@ -37,47 +44,116 @@ class Users(db.Model):
     def check_passwords(self, password):
         return check_password_hash(self.password_hash, password)
 
-class UserForm(FlaskForm):
-    username = StringField('Username:', validators=[DataRequired()])
-    first_name = StringField('First Name:', validators=[DataRequired()])
-    last_name = StringField('Last Name:', validators=[DataRequired()])
-    email = StringField('Email:', validators=[DataRequired(), Email()])
-    old_password = PasswordField('Old Password')
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Submit')
-
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return redirect(url_for('login'))
+
+@app.route('/login',methods=["GET","POST"])
+def login():
+    form = LogInForm()
+    users = Users.query.all()
+        
+    if form.validate_on_submit():
+        existing_user = Users.query.filter_by(username=form.username.data).first()
+        password_entered = form.password.data
+        
+        if existing_user:
+            if check_password_hash(existing_user.password_hash, password_entered):
+                login_user(existing_user)
+                return redirect(url_for('user_profile'))
+            else:
+                flash('Incorrect password.')
+        else:
+            flash('incorrect username or password')
+
+    return render_template('login.html',
+                           form=form,
+                           users=users)
+
+@app.route('/logout', methods=['GET','POST'])
+@login_required
+
+def logout():
+    logout_user()
+    flash('user logged out successfully')
+    return redirect(url_for('login'))
+
 
 @app.route('/users', methods=['GET'])
-
 def users():
     users = Users.query.all()
     return render_template('users.html',
                            users=users)
 
-@app.route('/user/profile/<int:id>', methods=['GET','POST'])
+@app.route('/user/profile', methods=['GET','POST'])
+@login_required
 
-def user_profile(id):
-    form=UserForm()
-    user_profile = Users.query.get_or_404(id)
+def user_profile():
+    form = CheckPassword()
 
-    if request.method == 'POST':
+    if form.validate_on_submit():
         password_entered = form.password.data
 
-        if check_password_hash(user_profile.password_hash, password_entered):
+        if check_password_hash(current_user.password_hash, password_entered):
             flash('Password is correct!')
         else:
             flash('Incorrect password.')
-
     return render_template('user_profile.html',
-                           form=form,
-                           user_profile=user_profile)
+                           form=form)
+
+@app.route('/user/change_password', methods=['GET','POST'])
+@login_required
+
+def change_password():
+    form = ChangePassword()
+    user_to_edit = current_user
+
+    if form.validate_on_submit():
+        old_password = form.old_password.data
+
+        if check_password_hash(user_to_edit.password_hash, old_password):
+            if form.password.data:
+                user_to_edit.hash_password(form.password.data)
+
+                try:
+                    db.session.add(user_to_edit)
+                    db.session.commit()
+                    flash('password changed successfully.')
+
+                except Exception as e:
+                    db.session.rollback()
+                    flash('Something went wrong.')
+                return redirect(url_for('user_profile'))
+
+        else:    
+            flash('password entered does not match the old password.')
+            return render_template('user_edit.html', form=form)
+    
+    return render_template('change_password.html',
+                        form=form)
+
+@app.route('/reset_password',methods=['GET','POST'])
+def reset_password():
+    form = ResetPassword()
+
+    if form.validate_on_submit():
+        user = Users.query.filter_by(username=form.username.data).first()
+        if user:
+            user.hash_password(form.password.data)
+            try:
+                db.session.commit()
+                flash('Password reset successful!')
+                return redirect(url_for('login'))
+            except Exception as e:
+                db.session.rollback()
+                flash('Something went wrong, please try again.')
+        else:
+            flash('User does not exist.')
+    return render_template('reset_password.html',
+                           form=form)
 
 
 @app.route('/user/add', methods=['GET','POST'])
-
 def user_add():
     form = UserForm()
 
@@ -99,8 +175,9 @@ def user_add():
         try:
             db.session.add(new_user)
             db.session.commit()
+            login_user(new_user)
             flash('User added successfully')
-            return redirect(url_for('user_add'))
+            return redirect(url_for('user_profile'))
 
         except Exception as e:
             db.session.rollback()
@@ -109,56 +186,48 @@ def user_add():
     return render_template('user_add.html',
                            form=form)
 
-@app.route('/user/edit/<int:id>', methods=['GET','POST'])
+@app.route('/user/edit', methods=['GET','POST'])
+@login_required
 
-def user_edit(id):
-    form = UserForm()
-    user_to_edit = Users.query.get_or_404(id)
+def user_edit():
+    form = UserEditForm()
+    # user_to_edit = Users.query.get_or_404(id)
 
     if form.validate_on_submit():
-        old_password = form.old_password.data
-
-        if not check_password_hash(user_to_edit.password_hash, old_password):
-            flash('password entered does not match the old password.')
-            return render_template('user_edit.html', form=form, user_to_edit=user_to_edit)
         
-        user_to_edit.username = form.username.data
-        user_to_edit.first_name = form.first_name.data
-        user_to_edit.last_name = form.last_name.data
-        user_to_edit.email = form.email.data
-
-        if form.password.data:
-            user_to_edit.hash_password(form.password.data)
+        current_user.username = form.username.data
+        current_user.first_name = form.first_name.data
+        current_user.last_name = form.last_name.data
+        current_user.email = form.email.data
 
         try:
-            db.session.add(user_to_edit)
+            db.session.add(current_user)
             db.session.commit()
-            flash('User edited successfully.')
+            flash('user edited successfully.')
         except Exception as e:
             db.session.rollback()
-            flash('Something went wrong while updating user.')
-        return redirect(url_for('user_profile', id=user_to_edit.id))
+            flash('something went wrong while updating user.')
+        return redirect(url_for('user_profile'))
     
     return render_template('user_edit.html',
-                        user_to_edit=user_to_edit,
-                        form=form)
+                           form=form)
 
-@app.route('/user/delete/<int:id>')
+@app.route('/user/delete', methods=['GET','POST'])
+@login_required
 
-def user_delete(id):
-    user_to_delete = Users.query.get_or_404(id)
+def user_delete():
 
     try:
-        db.session.delete(user_to_delete)
+        db.session.delete(current_user)
         db.session.commit()
-        flash('User has been deleted.')
+        logout_user()
+        flash('user has been deleted successfully.')
 
     except Exception as e:
         db.session.rollback()
-        flash('Something went worng.')
+        flash('something went worng.')
     
-    return redirect(url_for('users'))
-
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
 

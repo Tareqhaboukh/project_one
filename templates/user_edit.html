@@ -9,31 +9,23 @@
 
     <div>
         {{ form.username.label }}
-        {{ form.username(value=user_to_edit.username) }}
+        {{ form.username(value=current_user.username) }}
         <br>
 
         {{ form.first_name.label }}
-        {{ form.first_name(value=user_to_edit.first_name) }}
+        {{ form.first_name(value=current_user.first_name) }}
         <br>
 
         {{ form.last_name.label }}
-        {{ form.last_name(value=user_to_edit.last_name) }}
+        {{ form.last_name(value=current_user.last_name) }}
         <br>
 
         {{ form.email.label }}
-        {{ form.email(value=user_to_edit.email) }}
-        <br>
-
-        {{ form.old_password.label }}
-        {{ form.old_password }}
-        <br>
-
-        {{ form.password.label }}
-        {{ form.password }}
+        {{ form.email(value=current_user.email) }}
         <br>
 
         {{ form.submit }} <br>
     </div>
 </form>
 
-<a href="{{ url_for('user_profile', id=user_to_edit.id) }}">back</a>
+<a href="{{ url_for('user_profile') }}">back</a>

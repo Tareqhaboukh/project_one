@@ -1,0 +1,36 @@
+{% for message in get_flashed_messages() %}
+    {{ message }}
+{% endfor %}
+
+
+<h2>Welcome to the app</h2>
+
+<p>Please login</p>
+<form method="post">
+
+{{ form.hidden_tag() }}
+
+{{ form.username.label }} <br>
+{{ form.username }} <br>
+
+{{ form.password.label }} <br>
+{{ form.password }} <br>
+
+{{ form.submit }}
+</form>
+
+<a href="{{ url_for('user_add') }}">create user</a><br>
+<a href="{{ url_for('reset_password') }}">reset password</a><br>
+
+{% if users %}
+<ul>
+    {% for user in users %}
+
+        <li>{{ user.first_name }} {{ user.last_name }} - {{ user.username }}<br></li>
+  
+    {% endfor %}
+</ul>
+
+    {% else %}
+        <p>no users in the database</p><br>
+{% endif %}
