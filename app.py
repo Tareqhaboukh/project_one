@@ -1,48 +1,42 @@
 from flask import Flask, request, redirect, render_template, url_for, flash
-from flask_sqlalchemy import SQLAlchemy
+from models import db, Users
 from flask_migrate import Migrate
 from forms import *
-from werkzeug.security import generate_password_hash, check_password_hash
+from api import api_blueprints
 from dotenv import load_dotenv
 from flask_login import LoginManager, UserMixin, current_user , login_user, login_required, logout_user
-from datetime import datetime, timezone
 import os
 
-load_dotenv()
-
-app = Flask(__name__)
-
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+migrate = Migrate()
 
 login_manager = LoginManager()
-login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+def create_app():
+    load_dotenv()
+
+    app = Flask(__name__)
+
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+    return app
+
+app = create_app()
+
+for blueprint in api_blueprints:
+    app.register_blueprint(blueprint)
 
 @login_manager.user_loader
 def user_load(user_id):
     return Users.query.get_or_404(int(user_id))
-
-class Users(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    first_name = db.Column(db.String(80), nullable=False)
-    last_name = db.Column(db.String(80), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    password_hash = db.Column(db.String(120), nullable=False)
-
-    def __repr__(self):
-        return f'<Users {self.username}>'
-    
-    def hash_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_passwords(self, password):
-        return check_password_hash(self.password_hash, password)
 
 @app.route('/')
 def index():
@@ -58,7 +52,7 @@ def login():
         password_entered = form.password.data
         
         if existing_user:
-            if check_password_hash(existing_user.password_hash, password_entered):
+            if existing_user.check_password(password_entered):
                 login_user(existing_user)
                 return redirect(url_for('user_profile'))
             else:
@@ -94,7 +88,7 @@ def user_profile():
     if form.validate_on_submit():
         password_entered = form.password.data
 
-        if check_password_hash(current_user.password_hash, password_entered):
+        if current_user.check_password(password_entered):
             flash('Password is correct!')
         else:
             flash('Incorrect password.')
@@ -106,17 +100,16 @@ def user_profile():
 
 def change_password():
     form = ChangePassword()
-    user_to_edit = current_user
 
     if form.validate_on_submit():
         old_password = form.old_password.data
 
-        if check_password_hash(user_to_edit.password_hash, old_password):
+        if current_user.check_password(old_password):
             if form.password.data:
-                user_to_edit.hash_password(form.password.data)
+                current_user.hash_password(form.password.data)
 
                 try:
-                    db.session.add(user_to_edit)
+                    db.session.add(current_user)
                     db.session.commit()
                     flash('password changed successfully.')
 
@@ -127,7 +120,6 @@ def change_password():
 
         else:    
             flash('password entered does not match the old password.')
-            return render_template('user_edit.html', form=form)
     
     return render_template('change_password.html',
                         form=form)
@@ -191,7 +183,6 @@ def user_add():
 
 def user_edit():
     form = UserEditForm()
-    # user_to_edit = Users.query.get_or_404(id)
 
     if form.validate_on_submit():
         
@@ -229,9 +220,9 @@ def user_delete():
     
     return redirect(url_for('login'))
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
 if __name__ == '__main__':
-
-    with app.app_context():
-        db.create_all()
-
     app.run(debug=True)
