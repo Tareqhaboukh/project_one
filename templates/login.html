@@ -1,36 +1,58 @@
-{% for message in get_flashed_messages() %}
-    {{ message }}
-{% endfor %}
+{% extends "base.html" %}
 
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 bg-white rounded shadow">
 
-<h2>Welcome to the app</h2>
+        {% for message in get_flashed_messages() %}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+            {{ message }}
+        </div>    
+        {% endfor %}
 
-<p>Please login</p>
-<form method="post">
+        <h2 class="text-2xl font-bold mb-8 text-center">Welcome to Project One!</h2>
 
-{{ form.hidden_tag() }}
+        <p class="mb-6">This app allows you to create, edit, and delete users. More functionality is coming soon.</p>
 
-{{ form.username.label }} <br>
-{{ form.username }} <br>
+        <form method="post" class="space-y-4">
 
-{{ form.password.label }} <br>
-{{ form.password }} <br>
+            {{ form.hidden_tag() }}
 
-{{ form.submit }}
-</form>
+            <div>
+                {{ form.username.label(class_="block font-medium") }}
+                {{ form.username(class_="border p-2 rounded w-full") }}
+            </div>
 
-<a href="{{ url_for('user_add') }}">create user</a><br>
-<a href="{{ url_for('reset_password') }}">reset password</a><br>
+            <div>
+                {{ form.password.label(class_="block font-medium") }}
+                {{ form.password(class_="border p-2 rounded w-full") }}
+            </div>
+            
+            <div class="text-center">
+                {{ form.submit(class_="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded")}}
+            </div>
 
-{% if users %}
-<ul>
-    {% for user in users %}
+        </form>
 
-        <li>{{ user.first_name }} {{ user.last_name }} - {{ user.username }}<br></li>
-  
-    {% endfor %}
-</ul>
+        <div class="mt-4 text-center space-y-1">
+            <a href="{{ url_for('user_add') }}" class="text-blue-600 hover:underline">Create New User</a><br>
+            <a href="{{ url_for('reset_password') }}" class="text-blue-600 hover:underline">Reset Password</a><br>
+        </div>
 
+    {% if users %}
+    <p class="mb-4 mt-4 text-center">Users List to test the API</p>
+
+    <div class="mt-4 overflow-y-auto max-h-48 border rounded p-4">
+        <ul class="text-left">
+            {% for user in users %}
+            <li class="border-b pb-2">{{ user.id }} – {{ user.username }}</li>
+            {% endfor %}
+        </ul>
+    </div>
     {% else %}
-        <p>no users in the database</p><br>
-{% endif %}
+      <p class="text-center">No users in the database.</p>
+    {% endif %}
+
+    </div>
+</div>    
+{% endblock %}
