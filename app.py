@@ -5,6 +5,7 @@ from forms import *
 from api import api_blueprints
 from dotenv import load_dotenv
 from flask_login import LoginManager, UserMixin, current_user , login_user, login_required, logout_user
+from flask_cors import CORS
 import os
 
 migrate = Migrate()
@@ -23,6 +24,8 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+
+    CORS(app)
 
     with app.app_context():
         db.create_all()
