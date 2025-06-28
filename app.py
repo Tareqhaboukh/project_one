@@ -39,7 +39,7 @@ for blueprint in api_blueprints:
 
 @login_manager.user_loader
 def user_load(user_id):
-    return Users.query.get_or_404(int(user_id))
+    return Users.query.get(int(user_id))
 
 @app.route('/')
 def index():
