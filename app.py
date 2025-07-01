@@ -29,6 +29,8 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        from data_seed import seed_default_users
+        seed_default_users()
 
     return app
 
