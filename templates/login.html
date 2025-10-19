@@ -14,30 +14,40 @@
 
         <p class="mb-6">This app allows you to create, edit, and delete users. More functionality is coming soon.</p>
 
-        <form method="post" class="space-y-4">
+        {% if form %}
+            <form method="post" class="space-y-4">
 
-            {{ form.hidden_tag() }}
+                {{ form.hidden_tag() }}
 
-            <div>
-                {{ form.username.label(class_="block font-medium") }}
-                {{ form.username(class_="border p-2 rounded w-full") }}
-            </div>
+                <div>
+                    {{ form.username.label(class_="block font-medium") }}
+                    {{ form.username(class_="border p-2 rounded w-full") }}
+                </div>
 
-            <div>
-                {{ form.password.label(class_="block font-medium") }}
-                {{ form.password(class_="border p-2 rounded w-full") }}
-            </div>
-            
+                <div>
+                    {{ form.password.label(class_="block font-medium") }}
+                    {{ form.password(class_="border p-2 rounded w-full") }}
+                </div>
+                
+                <div class="text-center">
+                    {{ form.submit(class_="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full")}}
+                </div>
+            </form>
+
             <div class="text-center">
-                {{ form.submit(class_="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded")}}
+                <form action="{{ url_for('guest_login') }}" method="get">
+                    <p class="py-2 px-4">or</p>
+                    <button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full">
+                        Login as Guest
+                    </button>
+                </form>
             </div>
 
-        </form>
-
-        <div class="mt-4 text-center space-y-1">
-            <a href="{{ url_for('user_add') }}" class="text-blue-600 hover:underline">Create New User</a><br>
-            <a href="{{ url_for('reset_password') }}" class="text-blue-600 hover:underline">Reset Password</a><br>
-        </div>
+            <div class="mt-4 text-center space-y-1">
+                <a href="{{ url_for('user_add') }}" class="text-blue-600 hover:underline">Create New User</a><br>
+                <a href="{{ url_for('reset_password') }}" class="text-blue-600 hover:underline">Reset Password</a><br>
+            </div>
+        {% endif %}
 
     {% if users %}
     <p class="mb-4 mt-4 text-center">Users List to test the API</p>
@@ -45,7 +55,9 @@
     <div class="mt-4 overflow-y-auto max-h-48 border rounded p-4">
         <ul class="text-left">
             {% for user in users %}
-            <li class="border-b pb-2">{{ user.id }} – {{ user.username }}</li>
+                {% if user.username != 'guest' %}
+                <li class="border-b pb-2">{{ user.id }} – {{ user.username }}</li>
+                {% endif %}
             {% endfor %}
         </ul>
     </div>

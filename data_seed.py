@@ -33,6 +33,22 @@ user4 = Users(
 user4.hash_password('password')
 
 def seed_default_users():
-    if Users.query.count() == 0:
+        
+    guest_user = Users.query.filter_by(username='guest').first()
+    if not guest_user:
+        guest_user = Users(
+            username='guest',
+            first_name='Guest',
+            last_name='User',
+            email='guest@projectone.com'
+        )
+        guest_user.hash_password('')
+        db.session.add(guest_user)
+        db.session.commit()
+        print("Guest user created!")
+
+    default_users_count = Users.query.filter(Users.username != 'guest').count()
+    if default_users_count == 0:
         db.session.add_all([user1, user2, user3, user4])
         db.session.commit()
+        print("Default users added!")

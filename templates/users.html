@@ -1,18 +1,36 @@
-{% for message in get_flashed_messages() %}
-    {{ message }}<br>
-{% endfor %}
+{% extends "base.html" %}
 
-<p>Users: (<a href="{{ url_for('user_profile') }}">back to user profile</a>)</p>
-{% if users %}
-<ul>
-    {% for user in users %}
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-lg p-8 bg-white rounded shadow">
 
-        <li>{{ user.first_name }} {{ user.last_name }} - {{ user.username }}<br></li>
-  
-    {% endfor %}
-</ul>
+        {% for message in get_flashed_messages() %}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+            {{ message }}
+        </div>
+        {% endfor %}
 
-    {% else %}
-        <p>no users in the database</p><br>
+        <h2 class="text-2xl font-bold mb-6 text-center">Users</h2>
 
-{% endif %}
+        <p class="mb-4 text-center">
+            (<a href="{{ url_for('user_profile') }}" class="text-blue-600 hover:underline">Back to User Profile</a>)
+        </p>
+
+        {% if users %}
+        <ul class="space-y-2">
+            {% for user in users %}
+            {% if user.username != 'guest' %}
+            <li class="border rounded p-3 shadow-sm hover:shadow-md transition-shadow">
+                <p class="font-medium">{{ user.first_name }} {{ user.last_name }}</p>
+                <p class="text-gray-600">Username: {{ user.username }}</p>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-center text-gray-500">No users in the database.</p>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

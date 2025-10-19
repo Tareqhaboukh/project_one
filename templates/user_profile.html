@@ -1,25 +1,83 @@
-{% for message in get_flashed_messages() %}
-    {{ message }}
-{% endfor %}
+{% extends "base.html" %}
 
-<h1>Welcome {{ current_user.first_name | title }} {{ current_user.last_name | title}}!</h1>
-<h2>Your username is: {{ current_user.username }}</h2>
-<p>Password hash: <br> {{ current_user.password_hash }}</p>
-<p>Time created: {{ current_user.date_created }}</p>
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 bg-white rounded shadow">
 
-<form method="POST">
-    {{ form.hidden_tag() }}
+        {% for message in get_flashed_messages() %}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+            {{ message }}
+        </div>    
+        {% endfor %}
 
-    {{ form.password.label }}
-    {{ form.password }}
-    <br>
+        <div class="flex justify-between items-start mb-6">
 
-    {{ form.submit }} <br>
-</form>
-<ul>
-    <li><a href="{{ url_for('users') }}">users list</a></li>
-    <li><a href="{{ url_for('user_edit') }}">edit user</a></li>
-    <li><a href="{{ url_for('change_password') }}">change password</a></li>
-    <li><a href="{{ url_for('user_delete', id=current_user.id) }}">delete user</a></li>
-    <li><a href="{{ url_for('logout') }}">logout</a></li>
-</ul>
+            <div class="flex flex-col">
+                <span class="text-xl font-semibold">Welcome</span>
+                <span class="text-2xl font-bold">{{ current_user.first_name | title }} {{ current_user.last_name | title }}</span>
+            </div>
+
+            <div class="w-14 h-14 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-lg">
+                {{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <a href="{{ url_for('user_profile') }}" 
+            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block">
+            Invoices
+            </a>
+        </div>
+
+        <div x-data="{ open: {{ 'true' if get_flashed_messages() else 'false' }} }" class="mb-6">
+            <button 
+                @click="open = !open"
+                class="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded flex justify-between items-center"
+            >
+                User Actions
+                <svg :class="{ 'rotate-180': open }" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+
+            <div 
+                x-ref="panel"
+                :style="open ? 'max-height: ' + $refs.panel.scrollHeight + 'px' : 'max-height: 0px'"
+                class="overflow-hidden transition-all duration-300 ease-in-out mt-2 space-y-2"
+            >
+                <a href="{{ url_for('users') }}" 
+                   class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
+                   Users List
+                </a>
+
+                <a href="{{ url_for('user_edit') }}" 
+                   class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
+                   {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
+                   Edit User
+                </a>
+
+                <a href="{{ url_for('change_password') }}" 
+                   class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
+                   {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
+                   Change Password
+                </a>
+
+                <a href="{{ url_for('logout') }}" 
+                   class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
+                   Logout
+                </a>
+
+                <a href="{{ url_for('user_delete', id=current_user.id) }}" 
+                   class="block bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
+                   {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
+                   Delete User
+                </a>
+            </div>
+        </div>
+        
+        <p class="mb-4 break-words"><strong>Time created:</strong> <br> {{ current_user.date_created.strftime('%d/%m/%Y %H:%M') }}</p>
+        <p class="mb-2 break-words"><strong>Password hash:</strong> <br> {{ current_user.password_hash }}</p>
+
+    </div>
+</div>
+{% endblock %}

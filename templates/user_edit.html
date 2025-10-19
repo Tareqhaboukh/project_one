@@ -1,31 +1,51 @@
-<p>Edit User</p>
+{% extends "base.html" %}
 
-{% for message in get_flashed_messages() %}
-    {{ message }}
-{% endfor %}
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 bg-white rounded shadow">
 
-<form method="POST">
-    {{ form.hidden_tag() }}
+        <h2 class="text-2xl font-bold mb-6 text-center">Edit User</h2>
 
-    <div>
-        {{ form.username.label }}
-        {{ form.username(value=current_user.username) }}
-        <br>
+        {% for message in get_flashed_messages() %}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+            {{ message }}
+        </div>
+        {% endfor %}
 
-        {{ form.first_name.label }}
-        {{ form.first_name(value=current_user.first_name) }}
-        <br>
+        <form method="POST" class="space-y-4">
 
-        {{ form.last_name.label }}
-        {{ form.last_name(value=current_user.last_name) }}
-        <br>
+            {{ form.hidden_tag() }}
 
-        {{ form.email.label }}
-        {{ form.email(value=current_user.email) }}
-        <br>
+            <div>
+                {{ form.username.label(class_="block font-medium") }}
+                {{ form.username(value=current_user.username, class_="border p-2 rounded w-full") }}
+            </div>
 
-        {{ form.submit }} <br>
+            <div>
+                {{ form.first_name.label(class_="block font-medium") }}
+                {{ form.first_name(value=current_user.first_name, class_="border p-2 rounded w-full") }}
+            </div>
+
+            <div>
+                {{ form.last_name.label(class_="block font-medium") }}
+                {{ form.last_name(value=current_user.last_name, class_="border p-2 rounded w-full") }}
+            </div>
+
+            <div>
+                {{ form.email.label(class_="block font-medium") }}
+                {{ form.email(value=current_user.email, class_="border p-2 rounded w-full") }}
+            </div>
+
+            <div class="text-center">
+                {{ form.submit(class_="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full") }}
+            </div>
+
+        </form>
+
+        <p class="mt-4 text-center">
+            <a href="{{ url_for('user_profile') }}" class="text-blue-600 hover:underline">Back to User Profile</a>
+        </p>
+
     </div>
-</form>
-
-<a href="{{ url_for('user_profile') }}">back</a>
+</div>
+{% endblock %}

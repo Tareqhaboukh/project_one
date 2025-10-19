@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, url_for, flash
+from flask import Flask, request, session, redirect, render_template, url_for, flash
 from models import db, Users
 from flask_migrate import Migrate
 from forms import *
@@ -69,11 +69,24 @@ def login():
                            form=form,
                            users=users)
 
+@app.route('/guest_login')
+def guest_login():
+    guest_user = Users.query.filter_by(username='guest').first()
+    if guest_user:
+        login_user(guest_user)
+        session['is_guest'] = True
+        flash('You are logged in as Guest.', 'info')
+        return redirect(url_for('user_profile'))
+    else:
+        flash('Guest user does not exist.')
+        return redirect(url_for('login'))
+
 @app.route('/logout', methods=['GET','POST'])
 @login_required
 
 def logout():
     logout_user()
+    session.clear()
     flash('user logged out successfully')
     return redirect(url_for('login'))
 
@@ -98,12 +111,20 @@ def user_profile():
         else:
             flash('Incorrect password.')
     return render_template('user_profile.html',
-                           form=form)
+                           form=form if not session.get('is_guest') else form,
+                           guest=session.get('is_guest', False),
+                           users=Users.query.all()
+    )
 
 @app.route('/user/change_password', methods=['GET','POST'])
 @login_required
 
 def change_password():
+
+    if session.get('is_guest'):
+        flash("Guests cannot change password.")
+        return redirect(url_for('user_profile'))
+    
     form = ChangePassword()
 
     if form.validate_on_submit():
@@ -187,6 +208,10 @@ def user_add():
 @login_required
 
 def user_edit():
+
+    if session.get('is_guest'):
+        flash("Guests cannot edit user.")
+        return redirect(url_for('user_profile'))
     form = UserEditForm()
 
     if form.validate_on_submit():
@@ -212,6 +237,10 @@ def user_edit():
 @login_required
 
 def user_delete():
+
+    if session.get('is_guest'):
+        flash("Guests cannot delete profile.")
+        return redirect(url_for('user_profile'))
 
     try:
         db.session.delete(current_user)
