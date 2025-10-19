@@ -4,10 +4,6 @@
 <div class="flex items-center justify-center min-h-screen">
     <div class="w-full max-w-md p-8 bg-white rounded shadow">
 
-        <p class="text-center mb-6">
-            Back to <a href="{{ url_for('login') }}" class="text-blue-600 hover:underline">login page</a>
-        </p>
-
         {% for message in get_flashed_messages() %}
         <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
             {{ message }}
@@ -48,6 +44,16 @@
             </div>
 
         </form>
+
+        <div class="mt-6">
+            <a href="{{ url_for('login') }}"
+               class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Login
+            </a>
+        </div>
 
     </div>
 </div>
