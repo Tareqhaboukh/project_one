@@ -1,5 +1,5 @@
 from flask import Flask, request, session, redirect, render_template, url_for, flash
-from models import db, Users
+from models import db, Users, Vendors
 from flask_migrate import Migrate
 from forms import *
 from api import api_blueprints
@@ -29,9 +29,8 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-        from data_seed import seed_default_users
-        seed_default_users()
-
+        from data_seed import seed_all
+        seed_all()
     return app
 
 app = create_app()
@@ -91,10 +90,10 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/users', methods=['GET'])
+@app.route('/user', methods=['GET'])
 def users():
     users = Users.query.all()
-    return render_template('users.html',
+    return render_template('user.html',
                            users=users)
 
 @app.route('/user/profile', methods=['GET','POST'])
@@ -228,7 +227,7 @@ def user_edit():
         except Exception as e:
             db.session.rollback()
             flash('something went wrong while updating user.')
-        return redirect(url_for('user_profile'))
+        #return redirect(url_for('user_profile'))
     
     return render_template('user_edit.html',
                            form=form)
@@ -263,6 +262,83 @@ def ping():
 
 def invoice():
     return render_template('invoice.html')
+
+@app.route('/analytic')
+@login_required
+
+def analytic():
+    return render_template('analytic.html')
+
+########## Vendors ##########
+
+@app.route('/vendor/add', methods=['GET', 'POST'])
+@login_required
+
+def vendor_add():
+    form = VendorForm()
+
+    if form.validate_on_submit():
+        new_vendor = Vendors(
+            vendor_name=form.vendor_name.data,
+            business_type=form.business_type.data,
+            tax_id=form.tax_id.data,
+            country=form.country.data,
+            city=form.city.data,
+            postal_code=form.postal_code.data,
+            created_by=current_user.username
+        )
+        db.session.add(new_vendor)
+        db.session.commit()
+        flash('Vendor added successfully!')
+        return redirect(url_for('user_profile'))
+
+    return render_template('vendor_add.html', form=form)
+
+@app.route('/vendor/edit/<int:vendor_id>', methods=['GET', 'POST'])
+@login_required
+def vendor_edit(vendor_id):
+    from models import Vendors
+    from app import db
+
+    vendor = Vendors.query.get_or_404(vendor_id)
+
+    form = VendorForm(obj=vendor)
+
+    if form.validate_on_submit():
+        vendor.vendor_name = form.vendor_name.data
+        vendor.business_type = form.business_type.data
+        vendor.tax_id = form.tax_id.data
+        vendor.country = form.country.data
+        vendor.city = form.city.data
+        vendor.postal_code = form.postal_code.data
+        db.session.commit()
+        flash('Vendor updated successfully!')
+        #return redirect(url_for('vendor'))
+
+    return render_template('vendor_edit.html', form=form, vendor=vendor)
+
+@app.route('/vendor/view/<int:vendor_id>')
+@login_required
+def vendor_view(vendor_id):
+    vendor_obj = Vendors.query.get_or_404(vendor_id)
+    return render_template("vendor_view.html", vendor=vendor_obj)
+
+@app.route('/vendor', methods=['GET', 'POST'])
+@login_required
+def vendor():
+    search_query = ""
+    vendors_list = []
+
+    if request.method == "POST":
+        search_query = request.form.get("search", "").strip()
+        if search_query:
+            vendors_list = Vendors.query.filter(Vendors.vendor_name.ilike(f"%{search_query}%")).all()
+        else:
+            vendors_list = Vendors.query.all()
+    else:
+        vendors_list = Vendors.query.all()
+
+    return render_template("vendor.html", vendors=vendors_list, search_query=search_query)
 
 @app.errorhandler(404)
 def page_not_found(e):

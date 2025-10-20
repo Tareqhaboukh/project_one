@@ -29,15 +29,16 @@
                     {{ form.password(class_="border p-2 rounded w-full") }}
                 </div>
                 
-                <div class="text-center">
-                    {{ form.submit(class_="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full")}}
+                <div class="mt-6">
+                    {{ form.submit(class_="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer") }}
                 </div>
             </form>
 
-            <div class="text-center">
+            <div class="mt-4">
                 <form action="{{ url_for('guest_login') }}" method="get">
-                    <p class="py-2 px-4">or</p>
-                    <button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full">
+                    <p class="text-center text-gray-500 mb-4">or</p>
+                    <button type="submit"
+                            class="flex items-center justify-center gap-2 w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer">
                         Login as Guest
                     </button>
                 </form>

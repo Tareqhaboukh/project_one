@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 db = SQLAlchemy()
 
 class Users(db.Model, UserMixin):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), nullable=False, unique=True)
     first_name = db.Column(db.String(80), nullable=False)
@@ -32,3 +34,19 @@ class Users(db.Model, UserMixin):
             "email": self.email,
             "date_created": self.date_created.isoformat()
         }
+    
+class Vendors(db.Model):  
+    __tablename__ = 'vendors'
+
+    id = db.Column(db.Integer, primary_key=True)
+    vendor_name = db.Column(db.String(120), nullable=False)
+    business_type = db.Column(db.String(100))
+    tax_id = db.Column(db.String(50))
+    country = db.Column(db.String(100))
+    city = db.Column(db.String(100))
+    postal_code = db.Column(db.String(20))
+    created_by = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.now())
+
+    def __repr__(self):
+        return f'<Vendor {self.vendor_name}>'
