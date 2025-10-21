@@ -32,6 +32,7 @@ def create_app():
 
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SECURE'] = True
 
     db.init_app(app)
     migrate.init_app(app, db)
