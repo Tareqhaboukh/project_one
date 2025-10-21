@@ -1,6 +1,7 @@
 def seed_all():
     seed_default_users()
     seed_default_vendors()
+    seed_default_invoices()
 
 def seed_default_users():
     from app import db
@@ -129,3 +130,47 @@ def seed_default_vendors():
         print("Default vendors added!")
     else:
         print("Vendors already exist. Skipping seeding.")
+
+def seed_default_invoices():
+    from app import db
+    from models import Invoices, Users, Vendors
+    from datetime import datetime, timedelta
+    import random
+
+    users = Users.query.all()
+    vendors = Vendors.query.all()
+
+    if not users or not vendors:
+        print("Cannot seed invoices: users or vendors missing.")
+        return
+
+    existing_invoices = Invoices.query.count()
+    if existing_invoices > 0:
+        print("Invoices already exist. Skipping seeding.")
+        return
+
+    invoice_list = []
+    base_date = datetime.now() - timedelta(days=90)
+
+    for i in range(1, 11):  # 10 invoices
+        user = random.choice(users)
+        vendor = random.choice(vendors)
+        amount = round(random.uniform(100, 5000), 2)
+        tax = round(amount * 0.13, 2)  # 13% tax
+        invoice_number = f"INV{i:03d}"
+        date = base_date + timedelta(days=random.randint(1, 90))
+
+        invoice = Invoices(
+            invoice_number=invoice_number,
+            date=date,
+            vendor_id=vendor.id,
+            user_id=user.id,
+            amount=amount,
+            tax=tax,
+            description=f"Sample invoice {i} for {vendor.vendor_name}"
+        )
+        invoice_list.append(invoice)
+
+    db.session.add_all(invoice_list)
+    db.session.commit()
+    print("Default invoices added!")

@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Numeric
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timezone
@@ -50,3 +51,24 @@ class Vendors(db.Model):
 
     def __repr__(self):
         return f'<Vendor {self.vendor_name}>'
+    
+
+class Invoices(db.Model):
+    __tablename__ = 'invoices'
+
+    id = db.Column(db.Integer, primary_key=True)
+    invoice_number = db.Column(db.String(64), nullable=False, unique=True)
+    date = db.Column(db.Date, nullable=False)
+    amount = db.Column(Numeric(10, 2), nullable=False)
+    tax = db.Column(Numeric(10, 2))
+    description = db.Column(db.String(256), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+
+    vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+
+    vendor = db.relationship('Vendors', backref='invoices')
+    user = db.relationship('Users', backref='invoices')
+
+    def __repr__(self):
+        return f'<Invoice {self.invoice_number} - {self.vendor.vendor_name}>'

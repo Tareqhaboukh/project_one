@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 bg-white rounded shadow">
+
+        <h2 class="text-2xl font-bold mb-6 text-center">Add Invoice</h2>
+
+        {% for message in get_flashed_messages() %}
+        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+            {{ message }}
+        </div>
+        {% endfor %}
+
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            
+            <div class="mt-2 text-center">
+                <a href="{{ url_for('static', filename='standard_invoice.pdf') }}" 
+                class="text-blue-500 hover:underline" download>
+                Download Standard Invoice PDF
+                </a>
+            </div>
+
+            {{ form.hidden_tag() }}
+
+            <div>
+                {{ form.pdf_file.label(class_="block font-medium") }}
+                {{ form.pdf_file(class_="border p-2 rounded w-full", id="pdf_file") }}
+            </div>
+
+            <div class="mt-2">
+                <button type="button" id="parse_pdf_btn"
+                        class="flex items-center justify-center gap-2 w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer">
+                    Parse PDF
+                </button>
+            </div>
+
+            <p class="text-center my-2 text-gray-600">or fill out manually</p>
+
+            <div>
+                {{ form.invoice_number.label(class_="block font-medium") }}
+                {{ form.invoice_number(class_="border p-2 rounded w-full", id="invoice_number") }}
+            </div>
+
+            <div>
+                {{ form.date.label(class_="block font-medium") }}
+                {{ form.date(class_="border p-2 rounded w-full", id="date") }}
+            </div>
+
+            <div>
+                {{ form.vendor_id.label(class_="block font-medium") }}
+                {{ form.vendor_id(class_="border p-2 rounded w-full", id="vendor_id") }}
+            </div>
+
+            <div>
+                {{ form.amount.label(class_="block font-medium") }}
+                {{ form.amount(class_="border p-2 rounded w-full", id="amount") }}
+            </div>
+
+            <div>
+                {{ form.tax.label(class_="block font-medium") }}
+                {{ form.tax(class_="border p-2 rounded w-full", id="tax") }}
+            </div>
+
+            <div>
+                {{ form.description.label(class_="block font-medium") }}
+                {{ form.description(class_="border p-2 rounded w-full", id="description") }}
+            </div>
+
+            <div class="mt-6 space-y-2">
+                {{ form.submit(class_="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer") }}
+
+                <a href="{{ url_for('invoice_list') }}"
+                   class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back to the Invoices List
+                </a>
+            </div>
+
+        </form>
+    </div>
+</div>
+<script>
+document.getElementById('parse_pdf_btn').addEventListener('click', function() {
+    const fileInput = document.getElementById('pdf_file');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please select a PDF file to parse.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('pdf_file', file);
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    formData.append('csrf_token', csrfToken);
+
+    fetch("{{ url_for('parse_pdf') }}", {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
+        const fields = data.fields;
+
+        if (fields.invoice_number) {
+            document.getElementById("invoice_number").value = fields.invoice_number;
+        }
+
+        // Date (convert MM/DD/YYYY to YYYY-MM-DD for input[type=date])
+        if (fields.date) {
+            let dateParts = fields.date.split(/[/\-]/); // split by / or -
+            if (dateParts.length === 3) {
+                // assume MM/DD/YYYY
+                let formattedDate = `${dateParts[2]}-${dateParts[0].padStart(2,'0')}-${dateParts[1].padStart(2,'0')}`;
+                document.getElementById("date").value = formattedDate;
+            } else {
+                document.getElementById("date").value = fields.date;
+            }
+        }
+
+        if (fields.amount) {
+            document.getElementById("amount").value = fields.amount;
+        }
+
+        if (fields.tax) {
+            document.getElementById("tax").value = fields.tax;
+        }
+
+        if (fields.description) {
+            document.getElementById("description").value = fields.description;
+        }
+
+        const vendorSelect = document.getElementById("vendor_id");
+        if (fields.vendor_id) {
+            vendorSelect.value = fields.vendor_id;
+        } else if (fields.vendor_name) {
+            for (let option of vendorSelect.options) {
+                if (option.text.toLowerCase().includes(fields.vendor_name.toLowerCase())) {
+                    vendorSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+
+        fileInput.value = '';
+
+        alert("PDF parsed successfully!");
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Failed to parse PDF.");
+    });
+});
+</script>
+{% endblock %}

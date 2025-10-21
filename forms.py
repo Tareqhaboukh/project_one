@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, DateTimeField
-from wtforms.validators import DataRequired, Email, Length, Optional
+from wtforms import StringField, SubmitField, PasswordField, DateTimeField, DateField, DecimalField, SelectField, FileField, SubmitField
+from wtforms.validators import DataRequired, Email, Length, NumberRange, InputRequired, ValidationError, Optional
+from models import Vendors
 
 class UserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -43,4 +44,25 @@ class VendorForm(FlaskForm):
     country = StringField('Country', validators=[Optional(), Length(max=100)])
     city = StringField('City', validators=[Optional(), Length(max=100)])
     postal_code = StringField('Postal Code', validators=[Optional(), Length(max=20)])
-    submit = SubmitField('Save')
+    submit = SubmitField('Submit Vendor')
+
+class InvoiceForm(FlaskForm):
+    pdf_file = FileField('Upload PDF (optional)', validators=[Optional()])
+    
+    invoice_number = StringField('Invoice Number', validators=[DataRequired()])
+    date = DateField('Date', validators=[DataRequired()])
+    vendor_id = SelectField('Vendor', coerce=int, validators=[InputRequired()])
+    amount = DecimalField('Amount', validators=[NumberRange(min=0), DataRequired()])
+    tax = DecimalField('Tax', validators=[NumberRange(min=0), Optional()])
+    description = StringField('Description', validators=[Optional()])
+    
+    submit = SubmitField('Submit Invoice')
+
+    def set_vendor_choices(self):
+        choices = [(0, "-- Select Vendor --")]
+        choices += [(v.id, v.vendor_name) for v in Vendors.query.all()]
+        self.vendor_id.choices = choices
+
+    def validate_vendor_id(self, field):
+        if field.data == 0:
+            raise ValidationError("Please select a vendor")

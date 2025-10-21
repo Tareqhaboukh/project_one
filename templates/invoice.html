@@ -4,22 +4,114 @@
 <div class="flex items-center justify-center min-h-screen">
     <div class="w-full max-w-md p-8 bg-white rounded shadow">
 
-        <h2 class="text-2xl font-bold mb-6 text-center">Invoice Upload</h2>
+        <h2 class="text-2xl font-bold mb-6 text-center">Invoices List</h2>
 
-        <p class="mb-6 text-gray-700">
-            The invoice upload feature is coming soon. You will be able to upload invoice PDFs, automatically extract details such as invoice number, date, and total, and save them in the database for tracking and reporting.
-        </p>
+        <div class="mb-4">
+            <input type="text" id="invoiceSearch" placeholder="Search invoices..."
+                   class="w-full border p-2 rounded" />
+        </div>
+
+        {% if invoices %}
+        <div style="overflow-x:auto; min-height:450px;"> <!-- Prevent shrinking -->
+            <table id="invoicesTable" class="min-w-full table-auto border-collapse border border-gray-300 text-xs">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border px-4 py-2">Invoice Number</th>
+                        <th class="border px-4 py-2">Vendor</th>
+                        <th class="border px-4 py-2">Amount</th>
+                        <th class="border px-4 py-2">Tax</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set total_amount = 0 %}
+                    {% set total_tax = 0 %}
+                    {% for invoice in invoices %}
+                    <tr data-id="{{ invoice.id }}" class="cursor-pointer hover:bg-gray-50">
+                        <td class="border px-4 py-2">{{ invoice.invoice_number }}</td>
+                        <td class="border px-4 py-2">{{ invoice.vendor.vendor_name }}</td>
+                        <td class="border px-4 py-2">${{ '%.2f'|format(invoice.amount) }}</td>
+                        <td class="border px-4 py-2">${{ '%.2f'|format(invoice.tax) }}</td>
+                    </tr>
+                    {% set total_amount = total_amount + invoice.amount %}
+                    {% set total_tax = total_tax + invoice.tax %}
+                    {% endfor %}
+                </tbody>
+                <tfoot class="bg-gray-100 font-bold">
+                    <tr>
+                        <td class="border px-4 py-2 text-right" colspan="2">Total</td>
+                        <td id="totalAmount" class="border px-4 py-2">${{ '%.2f'|format(total_amount) }}</td>
+                        <td id="totalTax" class="border px-4 py-2">${{ '%.2f'|format(total_tax) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-center text-gray-500">No invoices found.</p>
+        {% endif %}
 
         <div class="mt-6 space-y-2">
-            <a href="{{ url_for('user_profile') }}"
-            class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition cursor-pointer">
+            <a href="{{ url_for('invoice_add') }}"
+               class="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer">
+               Submit New Invoice
+            </a>
+
+            <a href="{{ url_for('dashboard') }}"
+               class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
-                Back to Profile
+                Back to Dashboard
             </a>
         </div>
 
     </div>
 </div>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    var table = $('#invoicesTable').DataTable({
+        "scrollY": "400px",
+        "scrollX": true,
+        "scrollCollapse": false, // prevent shrinking
+        "paging": false,
+        "info": false,
+        "autoWidth": true,
+        "dom": 't'
+    });
+
+    $('#invoicesTable tbody').on('click', 'tr', function() {
+        var invoiceId = $(this).data('id');
+        if (invoiceId) {
+            window.location.href = '/invoice/view/' + invoiceId;
+        }
+    });
+
+    function updateTotals() {
+        let totalAmount = 0;
+        let totalTax = 0;
+        table.rows({ search: 'applied' }).every(function() {
+            var data = this.data();
+            // Amount is in 4th column, Tax in 5th (0-indexed)
+            totalAmount += parseFloat(data[2].replace(/[$,]/g, '')) || 0;
+            totalTax += parseFloat(data[3].replace(/[$,]/g, '')) || 0;
+        });
+        $('#totalAmount').text('$' + totalAmount.toFixed(2));
+        $('#totalTax').text('$' + totalTax.toFixed(2));
+    }
+
+    updateTotals();
+
+    table.on('search.dt', function() {
+        updateTotals();
+    });
+
+    $('#invoiceSearch').on('keyup', function() {
+        table.search(this.value).draw();
+    });
+});
+</script>
 {% endblock %}

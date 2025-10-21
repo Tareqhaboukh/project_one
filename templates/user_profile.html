@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="flex items-center justify-center min-h-screen">
     <div class="w-full max-w-md p-8 bg-white rounded shadow">
@@ -11,39 +10,53 @@
         {% endfor %}
 
         <div class="flex justify-between items-start mb-6">
-
             <div class="flex flex-col">
                 <span class="text-xl font-semibold">Welcome</span>
-                <span class="text-2xl font-bold">{{ current_user.first_name | title }} {{ current_user.last_name | title }}</span>
+                <span class="text-2xl font-bold">
+                    {{ current_user.first_name | title }} {{ current_user.last_name | title }}
+                </span>
+                <span class="text-sm text-gray-600 mt-1">@{{ current_user.username }}</span>
             </div>
 
-            <div class="w-14 h-14 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-lg">
+            <div class="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-lg">
                 {{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}
             </div>
         </div>
 
-        <div class="mb-4">
-            <a href="{{ url_for('invoice') }}" 
-            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block">
-            Invoices
+        <div class="space-y-3 text-gray-800 text-sm border-t border-gray-200 pt-4">
+            <div class="flex justify-between">
+                <span class="font-semibold">User ID:</span>
+                <span>{{ current_user.id }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold">Username:</span>
+                <span>{{ current_user.username }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold">Email:</span>
+                <span>{{ current_user.email }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold">Account Created:</span>
+                <span>{{ current_user.date_created.strftime('%B %d, %Y %I:%M %p') if current_user.date_created else 'N/A' }}</span>
+            </div>
+            <div class="flex flex-col mb-2">
+                <span class="font-semibold">Password hash:</span>
+                <span class="break-all text-gray-700">{{ current_user.password_hash }}</span>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <a href="{{ url_for('dashboard') }}"
+               class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Dashboard
             </a>
         </div>
 
-        <div class="mb-4">
-            <a href="{{ url_for('vendor') }}" 
-            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block">
-            Vendors
-            </a>
-        </div>
-
-        <div class="mb-4">
-            <a href="{{ url_for('analytic') }}" 
-            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block">
-            Analytics
-            </a>
-        </div>
-
-        <div x-data="{ open: false }" class="mb-6">
+        <div x-data="{ open: false }" class="mt-6">
             <button 
                 @click="open = !open"
                 class="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded flex justify-between items-center"
@@ -88,9 +101,6 @@
                 </a>
             </div>
         </div>
-
-        <p class="mb-4 break-words"><strong>Time created:</strong> <br> {{ current_user.date_created.strftime('%d/%m/%Y %H:%M') }}</p>
-        <p class="mb-2 break-words"><strong>Password hash:</strong> <br> {{ current_user.password_hash }}</p>
 
     </div>
 </div>
