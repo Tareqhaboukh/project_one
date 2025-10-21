@@ -1,8 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Numeric
+from sqlalchemy import Numeric, inspect
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from decimal import Decimal
 
 db = SQLAlchemy()
 
@@ -72,3 +73,39 @@ class Invoices(db.Model):
 
     def __repr__(self):
         return f'<Invoice {self.invoice_number} - {self.vendor.vendor_name}>'
+    
+# --- Convert table rows to JSON ---
+def table_to_json(limit_per_table=None):
+    """
+    Dynamically convert all tables in db.metadata to JSON.
+    Works for modern Flask-SQLAlchemy.
+    """
+    SENSITIVE_COLUMNS = ["password_hash"]
+    json_data = {}
+
+    for table_name, table_obj in db.metadata.tables.items():
+        query = db.session.query(table_obj)
+        if limit_per_table:
+            query = query.limit(limit_per_table)
+        rows = query.all()
+        
+        json_data[table_name] = []
+        for row in rows:
+            row_dict = {}
+            for col, value in zip(table_obj.columns, row):
+                if col.name in SENSITIVE_COLUMNS:
+                    continue
+                if value is None:
+                    value = None
+                elif isinstance(value, datetime) or isinstance(value, date):
+                    value = value.isoformat()
+                elif isinstance(value, Decimal):
+                    value = float(value)
+                elif isinstance(value, int):
+                    value = int(value)
+                elif isinstance(value, float):
+                    value = float(value)
+                row_dict[col.name] = value
+            json_data[table_name].append(row_dict)
+
+    return json_data

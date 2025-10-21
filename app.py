@@ -1,5 +1,5 @@
 from flask import Flask, request, session, redirect, render_template, url_for, flash, jsonify
-from models import db, Users, Vendors, Invoices
+from models import db, Users, Vendors, Invoices, table_to_json
 from flask_migrate import Migrate
 from forms import *
 from api import api_blueprints
@@ -8,6 +8,11 @@ from flask_login import LoginManager, UserMixin, current_user , login_user, logi
 from flask_cors import CORS
 from datetime import datetime, timezone
 from utilities import parse_invoice_pdf
+from google import genai
+from sqlalchemy import func
+import json
+import sqlite3
+import re
 import os
 
 migrate = Migrate()
@@ -20,8 +25,13 @@ def create_app():
 
     app = Flask(__name__)
 
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-secret-key')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///app.db')
+
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -50,6 +60,10 @@ def index():
 
 @app.route('/login',methods=["GET","POST"])
 def login():
+
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
     form = LogInForm()
     users = Users.query.all()
         
@@ -283,18 +297,16 @@ def invoice_view(invoice_id):
 
 def invoice_add():
     form = InvoiceForm()
-    form.set_vendor_choices()  # populate vendor dropdown
+    form.set_vendor_choices()
     pdf_snippet = None
 
     if form.validate_on_submit():
 
-        # Check if invoice number already exists
         existing_invoice = Invoices.query.filter_by(invoice_number=form.invoice_number.data).first()
         if existing_invoice:
             flash('An invoice with this number already exists!')
             return render_template('invoice_add.html', form=form, pdf_snippet=pdf_snippet)
         
-        # Create new invoice record
         invoice = Invoices(
             invoice_number=form.invoice_number.data,
             date=form.date.data,
@@ -333,6 +345,7 @@ def parse_pdf():
 
 @app.route('/invoice/edit/<int:invoice_id>', methods=['GET', 'POST'])
 @login_required
+
 def invoice_edit(invoice_id):
     invoice = Invoices.query.get_or_404(invoice_id)
     form = InvoiceForm(obj=invoice)
@@ -427,11 +440,87 @@ def vendor_edit(vendor_id):
 
 ########## Analytics ##########
 
-@app.route('/analytic')
+@app.route("/analytic")
+def analytic():
+    selected_vendor = request.args.get("vendor_id")
+    vendors = Vendors.query.all()
+    bar_data = []
+
+    if selected_vendor:
+        vendor_obj = Vendors.query.get(selected_vendor)
+        if vendor_obj:
+            bar_data = [
+                {
+                    "vendor": vendor_obj.vendor_name,
+                    "amount": float(sum([inv.amount for inv in vendor_obj.invoices])),
+                    "tax": float(sum([inv.tax or 0 for inv in vendor_obj.invoices]))
+                }
+            ]
+
+    return render_template(
+        "analytic.html",
+        vendors=vendors,
+        selected_vendor=selected_vendor,
+        bar_data=bar_data
+    )
+
+########## Chat Bot ##########
+
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
+client = genai.Client(api_key=GOOGLE_API_KEY)
+
+@app.route("/chatbot")
 @login_required
 
-def analytic():
-    return render_template('analytic.html')
+def chatbot_page():
+    return render_template("chatbot.html")
+
+
+@app.route("/ask", methods=["POST"])
+@login_required
+
+def ask():
+    data = request.get_json()
+    question = data.get("question", "").strip()
+
+    if not question:
+        return jsonify({"answer": "Please provide a question."})
+
+    db_json = table_to_json(limit_per_table=50)
+    json_str = json.dumps(db_json)
+    prompt = f"""
+You are an expert data assistant.
+Here is the database in JSON format:
+
+{json_str}
+
+Instructions:
+- Answer the user's question using only the data above.
+- Do not make up any database information.
+- Be concise and clear.
+- If the user says a greeting or something casual (e.g., "Hello", "How are you?", "Good morning"), respond naturally as a friendly assistant.
+- Only answer database questions with the data above.
+
+Question: {question}
+
+Answer:
+"""
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+        if hasattr(response, "text"):
+            answer = response.text.strip()
+        elif hasattr(response, "candidates"):
+            answer = response.candidates[0].content.strip()
+        else:
+            answer = str(response)
+
+    except Exception as e:
+        answer = f"Error: {str(e)}"
+
+    return jsonify({"answer": answer})
 
 ########## Other ##########
 
@@ -440,8 +529,10 @@ def ping():
     return 'OK', 200
 
 @app.errorhandler(404)
+@login_required
+
 def page_not_found(e):
     return render_template('404.html'), 404
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)

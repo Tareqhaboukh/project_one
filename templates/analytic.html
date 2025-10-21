@@ -4,11 +4,21 @@
 <div class="flex items-center justify-center min-h-screen">
     <div class="w-full max-w-md p-8 bg-white rounded shadow">
 
-        <h2 class="text-2xl font-bold mb-6 text-center">Analytics</h2>
+        <h2 class="text-2xl font-bold mb-4 text-center">Analytics</h2>
 
-        <p class="mb-6 text-gray-700">
-            The Analytics feature is coming soon. You will be able to view analytics for invoices based on vendor and location.
-        </p>
+        <div class="mb-4 flex items-center">
+            <label class="mr-2 font-semibold" for="vendorSelect">Select Vendor:</label>
+            <select id="vendorSelect" class="border border-gray-300 rounded px-2 py-1 w-full">
+                <option value="" {% if not selected_vendor %}selected{% endif %}>Select a vendor</option>
+                {% for vendor in vendors %}
+                    <option value="{{ vendor.id }}" {% if selected_vendor == vendor.id|string %}selected{% endif %}>
+                        {{ vendor.vendor_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="barGraph" class="w-full mb-4" style="height:400px;"></div>
 
         <div class="mt-6">
             <a href="{{ url_for('dashboard') }}"
@@ -19,7 +29,63 @@
                 Back to Dashboard
             </a>
         </div>
-
     </div>
 </div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+const barData = {{ bar_data | tojson }};
+const barGraphDiv = document.getElementById('barGraph');
+
+function renderPlot(data) {
+    if (!data || data.length === 0) {
+        barGraphDiv.innerHTML = '';
+        return;
+    }
+
+    const traceAmount = {
+        x: data.map(d => d.vendor),
+        y: data.map(d => d.amount),
+        name: 'Amount',
+        type: 'bar',
+        marker: { color: '#3b82f6' },
+        hoverinfo: 'skip',
+        width: 0.4
+    };
+
+    const traceTax = {
+        x: data.map(d => d.vendor),
+        y: data.map(d => d.tax),
+        name: 'Tax',
+        type: 'bar',
+        marker: { color: '#f59e0b' },
+        hoverinfo: 'skip',
+        width: 0.4
+    };
+
+    Plotly.newPlot(barGraphDiv, [traceAmount, traceTax], {
+        barmode: 'stack',
+        height: 420,
+        margin: { t: 40, b: 60, l: 60, r: 10 },
+        legend: { x: 0.5, y: -0.1, xanchor: 'center', yanchor: 'top', orientation: 'h' },
+        xaxis: { showticklabels: true },
+        yaxis: { showticklabels: true, tickprefix: '$', separatethousands: true },
+        hovermode: false
+    }, {displayModeBar: false});
+}
+
+// Initial render
+renderPlot(barData);
+
+// Vendor filter change
+document.getElementById('vendorSelect').addEventListener('change', function() {
+    const vendorId = this.value;
+    if (vendorId) {
+        window.location.href = '/analytic?vendor_id=' + vendorId;
+    } else {
+        // no vendor selected, clear plot
+        renderPlot([]);
+    }
+});
+</script>
 {% endblock %}

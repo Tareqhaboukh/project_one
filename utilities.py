@@ -11,13 +11,10 @@ def parse_invoice_pdf(pdf_bytes):
     # Try extracting AcroForm fields first
     form_data = reader.get_fields()
     if form_data:
-        print("=== FORM FIELD NAMES AND VALUES ===")
         for key, val in form_data.items():
             value = val.get('/V')
-            print(f"{key}: {value}")
             if value:
                 fields[key.lower()] = str(value).strip()
-        print("=== END ===")
     else:
         # Fallback: extract visible text if no form fields
         text = "".join([page.extract_text() or "" for page in reader.pages])
