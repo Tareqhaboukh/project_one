@@ -42,7 +42,7 @@
 
             <!-- Centered Bar graph container -->
             <div class="flex justify-center">
-                <div id="barGraph" class="w-full h-[400px] md:h-[700px] mx-auto"></div>
+                <div id="barGraph" class="w-full h-[700px] mx-auto"></div>
             </div>
         </div>
 
@@ -94,7 +94,8 @@ Plotly.newPlot(barGraphDiv, [traceAmount, traceTax], {
     legend: { x: 0.5, y: -0.2, xanchor: 'center', yanchor: 'top', orientation: 'h' },
     xaxis: { type: 'category', automargin: true, fixedrange: false },
     yaxis: { showticklabels: true, tickprefix: '$', separatethousands: true, automargin: true },
-    hovermode: false
+    hovermode: false,
+    height: 700
 }, { displayModeBar: false, responsive: true });
 }
 
