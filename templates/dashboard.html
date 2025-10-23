@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md p-8 bg-white rounded shadow">
+    <div class="w-[680px] h-[960px] p-8 bg-white rounded shadow flex flex-col">
 
         {% for message in get_flashed_messages() %}
         <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
@@ -10,6 +10,7 @@
         </div>    
         {% endfor %}
 
+        <!-- Welcome Section -->
         <a href="{{ url_for('user_profile') }}" class="block hover:bg-gray-50 rounded-lg p-2 transition cursor-pointer">
             <div class="flex justify-between items-start mb-6">
                 <div class="flex flex-col">
@@ -25,42 +26,40 @@
             </div>
         </a>
 
-        <div class="mb-4">
+        <!-- Navigation Buttons -->
+        <div class="flex-1 space-y-4">
             <a href="{{ url_for('invoice_list') }}" 
-            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block">
-            Invoices
+               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+                Invoices
             </a>
-        </div>
 
-        <div class="mb-4">
             <a href="{{ url_for('vendor') }}" 
-            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block">
-            Vendors
+               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+                Vendors
             </a>
-        </div>
 
-        <div class="mb-4">
             <a href="{{ url_for('analytic') }}" 
-            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block">
-            Analytics
+               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+                Analytics
             </a>
-        </div>
 
-        <div class="mb-4">
             <a href="{{ url_for('chatbot_page') }}" 
-            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block">
-            Ask AI a Question
+               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+                Ask AI a Question
             </a>
         </div>
 
-        <div class="mb-4">
+        <!-- Logout Button at Bottom -->
+        <div class="mt-auto">
             <a href="{{ url_for('logout') }}" 
-            class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
-            Logout
+               class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
+                Logout
             </a>
         </div>
+
     </div>
 </div>
+
 <!-- Cloudflare Web Analytics -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
         data-cf-beacon='{"token": "54b0b08ba67148b891d5416396746948"}'></script>

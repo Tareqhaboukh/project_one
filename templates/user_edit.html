@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md p-8 bg-white rounded shadow">
+<div class="flex items-center justify-center min-h-screen bg-gray-50">
+    <div class="w-[680px] h-[960px] p-8 bg-white rounded shadow flex flex-col">
 
         <h2 class="text-2xl font-bold mb-6 text-center">Edit User</h2>
 
@@ -12,35 +12,36 @@
         </div>
         {% endfor %}
 
-        <form method="POST" class="space-y-4">
-
+        <form method="POST" class="flex-1 flex flex-col justify-between">
             {{ form.hidden_tag() }}
 
-            <div>
-                {{ form.username.label(class_="block font-medium") }}
-                {{ form.username(value=current_user.username, class_="border p-2 rounded w-full") }}
-            </div>
+            <div class="space-y-4">
+                <div>
+                    {{ form.username.label(class_="block font-medium") }}
+                    {{ form.username(value=current_user.username, class_="border p-2 rounded w-full") }}
+                </div>
 
-            <div>
-                {{ form.first_name.label(class_="block font-medium") }}
-                {{ form.first_name(value=current_user.first_name, class_="border p-2 rounded w-full") }}
-            </div>
+                <div>
+                    {{ form.first_name.label(class_="block font-medium") }}
+                    {{ form.first_name(value=current_user.first_name, class_="border p-2 rounded w-full") }}
+                </div>
 
-            <div>
-                {{ form.last_name.label(class_="block font-medium") }}
-                {{ form.last_name(value=current_user.last_name, class_="border p-2 rounded w-full") }}
-            </div>
+                <div>
+                    {{ form.last_name.label(class_="block font-medium") }}
+                    {{ form.last_name(value=current_user.last_name, class_="border p-2 rounded w-full") }}
+                </div>
 
-            <div>
-                {{ form.email.label(class_="block font-medium") }}
-                {{ form.email(value=current_user.email, class_="border p-2 rounded w-full") }}
+                <div>
+                    {{ form.email.label(class_="block font-medium") }}
+                    {{ form.email(value=current_user.email, class_="border p-2 rounded w-full") }}
+                </div>
             </div>
 
             <div class="mt-6 space-y-2">
                 {{ form.submit(class_="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer") }}
 
                 <a href="{{ url_for('user_profile') }}"
-                class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition cursor-pointer">
+                   class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition cursor-pointer">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md p-8 bg-white rounded shadow">
+<div class="flex items-center justify-center min-h-screen bg-gray-50">
+    <div class="w-[680px] h-[960px] p-8 bg-white rounded shadow flex flex-col justify-center">
 
         {% for message in get_flashed_messages() %}
         <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
@@ -11,8 +11,6 @@
         {% endfor %}
 
         <h2 class="text-2xl font-bold mb-6 text-center">Welcome to Project One!</h2>
-
-        <p class="mb-6">Manage users, add and track invoices, handle vendors, ask questions with the AI chat, view analytics, and access the API all in one app.</p>
 
         {% if form %}
             <form method="post" class="space-y-4">
@@ -49,22 +47,6 @@
                 <a href="{{ url_for('reset_password') }}" class="text-blue-600 hover:underline">Reset Password</a><br>
             </div>
         {% endif %}
-
-    {% if users %}
-    <p class="mb-4 mt-4 text-center">Users List to test the API</p>
-
-    <div class="mt-4 overflow-y-auto max-h-48 border rounded p-4">
-        <ul class="text-left">
-            {% for user in users %}
-                {% if user.username != 'guest' %}
-                <li class="border-b pb-2">{{ user.id }} – {{ user.username }}</li>
-                {% endif %}
-            {% endfor %}
-        </ul>
-    </div>
-    {% else %}
-      <p class="text-center">No users in the database.</p>
-    {% endif %}
 
     </div>
 </div>    

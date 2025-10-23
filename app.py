@@ -79,7 +79,7 @@ def login():
             else:
                 flash('Incorrect password.')
         else:
-            flash('incorrect username or password')
+            flash('Incorrect username or password')
 
     return render_template('login.html',
                            form=form,
@@ -103,7 +103,7 @@ def guest_login():
 def logout():
     logout_user()
     session.clear()
-    flash('user logged out successfully')
+    flash('User logged out successfully')
     return redirect(url_for('login'))
 
 @app.route('/dashboard', methods=['GET','POST'])
@@ -186,10 +186,10 @@ def user_edit():
         try:
             db.session.add(current_user)
             db.session.commit()
-            flash('user edited successfully.')
+            flash('User edited successfully.')
         except Exception as e:
             db.session.rollback()
-            flash('something went wrong while updating user.')
+            flash('Something went wrong while updating user.')
         #return redirect(url_for('dashboard'))
     
     return render_template('user_edit.html',
@@ -208,11 +208,11 @@ def user_delete():
         db.session.delete(current_user)
         db.session.commit()
         logout_user()
-        flash('user has been deleted successfully.')
+        flash('User has been deleted successfully.')
 
     except Exception as e:
         db.session.rollback()
-        flash('something went worng.')
+        flash('Something went worng.')
     
     return redirect(url_for('login'))
 
@@ -237,7 +237,7 @@ def change_password():
                 try:
                     db.session.add(current_user)
                     db.session.commit()
-                    flash('password changed successfully.')
+                    flash('Password changed successfully.')
 
                 except Exception as e:
                     db.session.rollback()
@@ -245,7 +245,7 @@ def change_password():
                 return redirect(url_for('dashboard'))
 
         else:    
-            flash('password entered does not match the old password.')
+            flash('Password entered does not match the old password.')
     
     return render_template('change_password.html',
                         form=form)
@@ -349,7 +349,7 @@ def parse_pdf():
 
 def invoice_edit(invoice_id):
     invoice = Invoices.query.get_or_404(invoice_id)
-    form = InvoiceForm(obj=invoice)
+    form = EditInvoiceForm(obj=invoice)
     form.set_vendor_choices()  # populate vendor dropdown
 
     if form.validate_on_submit():
@@ -424,7 +424,7 @@ def vendor_edit(vendor_id):
 
     vendor = Vendors.query.get_or_404(vendor_id)
 
-    form = VendorForm(obj=vendor)
+    form = EditVendorForm(obj=vendor)
 
     if form.validate_on_submit():
         vendor.vendor_name = form.vendor_name.data
@@ -443,24 +443,26 @@ def vendor_edit(vendor_id):
 
 @app.route("/analytic")
 def analytic():
-    selected_vendor = request.args.get("vendor_id")
+    selected_vendor = request.args.getlist("vendor_id")  # multiple vendors
     vendors = Vendors.query.all()
+    
+    # Convert to JSON-serializable list of dicts
+    vendors_list = [{"id": v.id, "vendor_name": v.vendor_name} for v in vendors]
+
     bar_data = []
 
     if selected_vendor:
-        vendor_obj = Vendors.query.get(selected_vendor)
-        if vendor_obj:
-            bar_data = [
-                {
-                    "vendor": vendor_obj.vendor_name,
-                    "amount": float(sum([inv.amount for inv in vendor_obj.invoices])),
-                    "tax": float(sum([inv.tax or 0 for inv in vendor_obj.invoices]))
-                }
-            ]
+        vendor_objs = Vendors.query.filter(Vendors.id.in_(selected_vendor)).all()
+        for vendor_obj in vendor_objs:
+            bar_data.append({
+                "vendor": vendor_obj.vendor_name,
+                "amount": float(sum([inv.amount for inv in vendor_obj.invoices])),
+                "tax": float(sum([inv.tax or 0 for inv in vendor_obj.invoices]))
+            })
 
     return render_template(
         "analytic.html",
-        vendors=vendors,
+        vendors=vendors_list,          # pass the list of dicts
         selected_vendor=selected_vendor,
         bar_data=bar_data
     )
@@ -474,8 +476,69 @@ client = genai.Client(api_key=GOOGLE_API_KEY)
 @login_required
 
 def chatbot_page():
-    return render_template("chatbot.html")
+    conversation = session.get("conversation", [])
+    return render_template("chatbot.html", conversation=conversation)
 
+base_prompt = """
+You are an expert data assistant and guide for the web application.
+
+You can:
+- Answer questions about the database (provided below).
+- Help users navigate the site by describing where to find things and what actions are available.
+
+SITE STRUCTURE & NAVIGATION GUIDE
+
+1. Login Page
+   - Users can log in, log in as Guest, create a new user, or reset their password.
+
+2. Dashboard / Main Menu
+   - Options available:
+     - View Invoices
+     - View Vendors
+     - View Analytics
+     - Ask AI Question (the chatbot)
+   - At the bottom: Logout button.
+   - Clicking on the username at the top opens the **User Profile**.
+
+3. User Profile
+   - Displays:
+     - User ID
+     - Username
+     - Email
+     - Account Created
+     - Password Hash
+   - Under “User Actions” users can:
+     - View User List
+     - Edit User
+     - Change Password
+     - Logout
+     - Delete User
+
+4. Invoices Section
+   - View a list of all invoices.
+   - Click on an invoice to view its details; the option to edit will be available there.
+   - Submit a new invoice manually or upload and parse a PDF.
+   - Download “Standard Invoice PDF (fillable)” to use as a template.
+
+5. Vendors Section
+   - View a list of all vendors.
+   - Click a vendor to view details.
+   - Click the edit button to modify vendor details.
+   - Create new vendors.
+
+6. Analytics Section
+   - View graphs showing total tax and amount for each vendor.
+
+INSTRUCTIONS
+
+INSTRUCTIONS
+- Answer all questions **clearly and concisely**.
+- For navigation or actions, provide **short step-by-step instructions**.
+- For database questions, use only the provided JSON data.
+- If asked casually (greetings, small talk), respond politely but briefly.
+- Do not add extra commentary; focus on **direct answers**.
+- If uncertain, suggest where the user might find the relevant section.
+"""
 
 @app.route("/ask", methods=["POST"])
 @login_required
@@ -487,36 +550,41 @@ def ask():
     if not question:
         return jsonify({"answer": "Please provide a question."})
 
+    # Initialize or retrieve conversation from session
+    if "conversation" not in session:
+        session["conversation"] = []
+
+    # Add user's message to session history
+    session["conversation"].append({"role": "user", "content": question})
+
+    # Prepare database snapshot
     db_json = table_to_json(limit_per_table=50)
     json_str = json.dumps(db_json)
-    prompt = f"""
-You are an expert data assistant.
-Here is the database in JSON format:
 
-{json_str}
+    # Build prompt dynamically using conversation history
+    prompt = f"{base_prompt}\n\nHere is the database:\n{json_str}\n\n"
+    for msg in session["conversation"]:
+        role = "User" if msg["role"] == "user" else "Assistant"
+        prompt += f"{role}: {msg['content']}\n"
+    prompt += "Assistant:"
 
-Instructions:
-- Answer the user's question using only the data above.
-- Do not make up any database information.
-- Be concise and clear.
-- If the user says a greeting or something casual (e.g., "Hello", "How are you?", "Good morning"), respond naturally as a friendly assistant.
-- Only answer database questions with the data above.
-
-Question: {question}
-
-Answer:
-"""
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
         )
+
+        # Handle Gemini response structure
         if hasattr(response, "text"):
             answer = response.text.strip()
         elif hasattr(response, "candidates"):
             answer = response.candidates[0].content.strip()
         else:
             answer = str(response)
+
+        # Add assistant's reply to conversation
+        session["conversation"].append({"role": "assistant", "content": answer})
+        session.modified = True  # ensure the session updates are saved
 
     except Exception as e:
         answer = f"Error: {str(e)}"
