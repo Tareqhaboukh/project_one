@@ -48,8 +48,23 @@ const sendBtn = document.getElementById('send');
 
 function appendMessage(sender, text) {
     const div = document.createElement('div');
-    div.className = sender === 'user' ? 'text-blue-700 mb-2' : 'text-green-700 mb-2';
-    div.textContent = sender === 'user' ? "You: " + text : "Bot: " + text;
+    div.className = sender === 'user' ? 
+        'text-blue-700 mb-3 font-medium' : 
+        'text-green-800 mb-3 whitespace-pre-line p-2 rounded-lg';
+
+    if (sender === 'user') {
+        div.textContent = "You: " + text;
+    } else {
+        // Convert markdown bullets, bold, italic, line breaks
+        let formatted = text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // bold
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')             // italic
+            .replace(/^\s*[\*\-]\s+(.*)/gm, '• $1')          // bullets
+            .replace(/\n/g, '<br>');                          // line breaks
+
+        div.innerHTML = "Bot: " + formatted;
+    }
+
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 }

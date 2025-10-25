@@ -15,7 +15,7 @@ class Users(db.Model, UserMixin):
     first_name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), nullable=False)
-    date_created = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    date_created = db.Column(db.DateTime, default=db.func.now())
     password_hash = db.Column(db.String(120), nullable=False)
 
     def __repr__(self):
@@ -63,7 +63,7 @@ class Invoices(db.Model):
     amount = db.Column(Numeric(10, 2), nullable=False)
     tax = db.Column(Numeric(10, 2))
     description = db.Column(db.String(256), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at =  db.Column(db.DateTime, default=db.func.now())
 
     vendor_id = db.Column(db.Integer, db.ForeignKey('vendors.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
