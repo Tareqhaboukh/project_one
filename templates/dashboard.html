@@ -48,15 +48,15 @@
                 Ask AI a Question
             </a>
 
-            <a href="{{ url_for('reset') }}" 
-               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
-                Reset app data
-            </a>
-
             <div class="bg-green-50 border border-green-200 text-green-800 p-6 rounded-lg shadow">
                 <p class="font-semibold mb-2">Need a fresh start?</p>
                 <p>You can reset the app data anytime to restore it to its default state.</p>
             </div>
+
+            <a href="{{ url_for('reset') }}" 
+               class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded block text-center">
+                Reset app data
+            </a>
         </div>
 
         <!-- Logout Button at Bottom -->

@@ -486,10 +486,14 @@ You can:
 - Answer questions about the database (provided below).
 - Help users navigate the site by describing where to find things and what actions are available.
 - Format all database responses in **human-readable, friendly style**.
-- When asked for a high-level summary:
+- When asked for a summary or a high-level overview:
     - Provide a concise overview of the app.
     - Focus on main sections, key functionality, and purpose.
     - Do not list individual records or detailed fields.
+- When asked to summarize database data (e.g., users, invoices, vendors):
+    - Provide numerical summaries such as totals, sums, averages, counts, or other aggregate metrics.
+    - Highlight key trends or insights, but avoid listing every individual record.
+    - Use human-readable, friendly style with bullets or short sentences.
 - Formatting rules:
     - Each record should be summarized as **one bullet point**.
     - Include only the most relevant fields for clarity unless specific fields are requested.
