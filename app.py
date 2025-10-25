@@ -486,6 +486,10 @@ You can:
 - Answer questions about the database (provided below).
 - Help users navigate the site by describing where to find things and what actions are available.
 - Format all database responses in **human-readable, friendly style**.
+- When asked for a high-level summary:
+    - Provide a concise overview of the app.
+    - Focus on main sections, key functionality, and purpose.
+    - Do not list individual records or detailed fields.
 - Formatting rules:
     - Each record should be summarized as **one bullet point**.
     - Include only the most relevant fields for clarity unless specific fields are requested.
@@ -512,9 +516,9 @@ SITE STRUCTURE & NAVIGATION GUIDE
 
 2. Dashboard / Main Menu
    - Options available:
-     - View Invoices
-     - View Vendors
-     - View Analytics
+     - Invoices
+     - Vendors
+     - Analytics
      - Ask AI Question (the chatbot)
    - A Reset option is available to restore demo data.
    - Logout button at the bottom.
@@ -527,7 +531,7 @@ SITE STRUCTURE & NAVIGATION GUIDE
 4. Invoices Section
    - View a list of all invoices.
    - Click an invoice to view details; option to edit available.
-   - Submit a new invoice manually or upload and parse a PDF.
+   - Submit a new invoice using one of two options: enter the details manually or upload a PDF to parse it automatically.
    - Download “Standard Invoice PDF (fillable)” as a template.
 
 5. Vendors Section
@@ -548,6 +552,7 @@ CREATOR INFORMATION
 - This web application was created by **Tareq Haboukh**.
 - LinkedIn: https://www.linkedin.com/in/tareqhaboukh/
 - Portfolio: https://tareqhaboukh.github.io/
+- Project Github page: https://github.com/Tareqhaboukh/project_one/
 """
 
 @app.route("/ask", methods=["POST"])
@@ -615,6 +620,8 @@ def reset():
         # Seed database
         seed_all()
 
+        logout_user()
+
         flash("Database has been reset and demo data reloaded.", "success")
     except Exception as e:
         flash(f"An error occurred while resetting: {str(e)}", "danger")
@@ -632,5 +639,5 @@ def ping():
 def page_not_found(e):
     return render_template('404.html'), 404
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)

@@ -2,43 +2,35 @@
 
 {% block content %}
 <div class="flex items-center justify-center min-h-screen bg-gray-50">
-    <div class="w-[680px] h-[960px] p-6 bg-white rounded-2xl shadow-lg flex flex-col">
+  <div class="w-[680px] h-[960px] p-6 bg-white rounded-2xl shadow-lg flex flex-col">
 
-        <h2 class="text-2xl font-bold mb-4 text-center">Chatbot</h2>
+    <h2 class="text-2xl font-bold mb-4 text-center">Chatbot</h2>
 
-        <!-- Chat messages -->
-        <div id="chat" class="flex-1 w-full overflow-y-auto border border-gray-200 rounded p-4 mb-4 bg-gray-50">
-            {% if conversation %}
-                {% for msg in conversation %}
-                    <div class="{{ 'text-blue-700 mb-2' if msg.role == 'user' else 'text-green-700 mb-2' }}">
-                        {{ 'You: ' + msg.content if msg.role == 'user' else 'Bot: ' + msg.content }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
-
-        <!-- Input and send button -->
-        <div class="w-full flex space-x-2">
-            <input id="question" type="text" placeholder="Ask a question..." 
-                class="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <button id="send" 
-                class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                Send
-            </button>
-        </div>
-
-        <!-- Back button -->
-        <div class="mt-auto">
-            <a href="{{ url_for('dashboard') }}"
-               class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition mt-6">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to Dashboard
-            </a>
-        </div>
-
+    <!-- Chat messages -->
+    <div id="chat" class="flex-1 w-full overflow-y-auto border border-gray-200 rounded p-4 mb-4 bg-gray-50">
+      <!-- Messages will be rendered by JS -->
     </div>
+
+    <!-- Input and send button -->
+    <div class="w-full flex space-x-2">
+      <input id="question" type="text" placeholder="Ask a question..." 
+             class="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <button id="send" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        Send
+      </button>
+    </div>
+
+    <!-- Back button -->
+    <div class="mt-auto">
+      <a href="{{ url_for('dashboard') }}" class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition mt-6">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Dashboard
+      </a>
+    </div>
+
+  </div>
 </div>
 
 <script>
@@ -46,7 +38,10 @@ const chat = document.getElementById('chat');
 const questionInput = document.getElementById('question');
 const sendBtn = document.getElementById('send');
 
-function appendMessage(sender, text) {
+let conversation = {{ conversation|tojson }};
+
+// Render a message (user or bot)
+function renderMessage(sender, text) {
     const div = document.createElement('div');
     div.className = sender === 'user' ? 
         'text-blue-700 mb-3 font-medium' : 
@@ -55,13 +50,11 @@ function appendMessage(sender, text) {
     if (sender === 'user') {
         div.textContent = "You: " + text;
     } else {
-        // Convert markdown bullets, bold, italic, line breaks
+        // Convert Markdown-like bold and bullets
         let formatted = text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // bold
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')             // italic
-            .replace(/^\s*[\*\-]\s+(.*)/gm, '• $1')          // bullets
+            .replace(/^\s*[\*\-•]\s+(.*)/gm, '• $1')          // bullets
             .replace(/\n/g, '<br>');                          // line breaks
-
         div.innerHTML = "Bot: " + formatted;
     }
 
@@ -69,11 +62,17 @@ function appendMessage(sender, text) {
     chat.scrollTop = chat.scrollHeight;
 }
 
+// Render previous conversation
+if (conversation) {
+    conversation.forEach(msg => renderMessage(msg.role, msg.content));
+}
+
+// Send question
 async function sendQuestion() {
     const question = questionInput.value.trim();
     if (!question) return;
 
-    appendMessage('user', question);
+    renderMessage('user', question);
     questionInput.value = '';
 
     try {
@@ -83,12 +82,13 @@ async function sendQuestion() {
             body: JSON.stringify({ question })
         });
         const data = await res.json();
-        appendMessage('bot', data.answer);
+        renderMessage('bot', data.answer);
     } catch (err) {
-        appendMessage('bot', "Error: " + err.message);
+        renderMessage('bot', "Error: " + err.message);
     }
 }
 
+// Event listeners
 sendBtn.addEventListener('click', sendQuestion);
 questionInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendQuestion();
