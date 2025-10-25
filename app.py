@@ -490,6 +490,8 @@ SITE STRUCTURE & NAVIGATION GUIDE
 
 1. Login Page
    - Users can log in, log in as Guest, create a new user, or reset their password.
+   - Visitors are encouraged to explore freely. They can create a dummy account or log in as a guest user.
+   - Any changes made are temporary and can be reset anytime from the main page.
 
 2. Dashboard / Main Menu
    - Options available:
@@ -497,6 +499,7 @@ SITE STRUCTURE & NAVIGATION GUIDE
      - View Vendors
      - View Analytics
      - Ask AI Question (the chatbot)
+   - A Reset option is available to restore demo data.
    - At the bottom: Logout button.
    - Clicking on the username at the top opens the **User Profile**.
 
@@ -529,7 +532,10 @@ SITE STRUCTURE & NAVIGATION GUIDE
 6. Analytics Section
    - View graphs showing total tax and amount for each vendor.
 
-INSTRUCTIONS
+7. Reset Functionality
+   - Available from the main page.
+   - Restores the app to its default state and re-seeds the database with demo data.
+   - Safe to use at any time; it helps users start fresh.
 
 INSTRUCTIONS
 - Answer all questions **clearly and concisely**.
@@ -538,6 +544,11 @@ INSTRUCTIONS
 - If asked casually (greetings, small talk), respond politely but briefly.
 - Do not add extra commentary; focus on **direct answers**.
 - If uncertain, suggest where the user might find the relevant section.
+
+CREATOR INFORMATION
+- This web application was created by **Tareq Haboukh**.
+- LinkedIn: https://www.linkedin.com/in/tareqhaboukh/
+- Portfolio: https://tareqhaboukh.github.io/
 """
 
 @app.route("/ask", methods=["POST"])
@@ -592,6 +603,25 @@ def ask():
     return jsonify({"answer": answer})
 
 ########## Other ##########
+
+@app.route('/reset', methods=['POST', 'GET'])
+def reset():
+    from data_seed import seed_all
+
+    try:
+        # Drop all tables
+        db.drop_all()
+        db.create_all()
+
+        # Seed database
+        seed_all()
+
+        flash("Database has been reset and demo data reloaded.", "success")
+    except Exception as e:
+        flash(f"An error occurred while resetting: {str(e)}", "danger")
+
+    return redirect(url_for('index'))
+
 
 @app.route('/ping')
 def ping():
