@@ -526,6 +526,7 @@ SITE STRUCTURE & NAVIGATION GUIDE
      - Invoices
      - Vendors
      - Analytics
+     - API Documentation
      - Ask AI Question (the chatbot)
    - A Reset option is available to restore demo data.
    - Logout button at the bottom.
@@ -547,10 +548,16 @@ SITE STRUCTURE & NAVIGATION GUIDE
    - Click edit to modify vendor details.
    - Create new vendors.
 
-6. Analytics Section
+6. API v1
+   - Two endpoints are available:
+     - Get a User by ID — requires entering a numeric ID in the input box.
+     - Get All Users — no input required.
+   - Each endpoint has a "Test the API on Hoppscotch" button at the bottom of its box for testing requests.
+
+7. Analytics Section
    - View graphs showing total tax and amount for each vendor.
 
-7. Reset Functionality
+8. Reset Functionality
    - Available from the main page.
    - Restores the app to its default state and re-seeds the database with demo data.
    - Safe to use anytime; helps users start fresh.
@@ -614,8 +621,15 @@ def ask():
     return jsonify({"answer": answer})
 
 ########## Other ##########
+@app.route("/docs")
+@login_required
+
+def api_docs():
+    return render_template("api_docs.html", title="API v1 Documentation")
 
 @app.route('/reset', methods=['POST', 'GET'])
+@login_required
+
 def reset():
     from data_seed import seed_all
 
@@ -641,9 +655,10 @@ def ping():
     return 'OK', 200
 
 @app.errorhandler(404)
-@login_required
 
 def page_not_found(e):
+    if request.path.startswith('/api/'):
+        return jsonify({"message": "User not found"}), 404
     return render_template('404.html'), 404
 
 if __name__ == '__main__':

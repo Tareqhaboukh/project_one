@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen bg-gray-50">
+    <div class="w-[680px] h-[960px] p-8 bg-white rounded-xl shadow-lg flex flex-col">
+
+        <!-- Title -->
+        <div>
+            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">API v1 Documentation</h2>
+        </div>
+
+        <!-- First API Method: Get User by ID -->
+        <div class="mb-6 border border-gray-300 rounded-lg flex flex-col h-[360px]">
+            <!-- Fixed title -->
+            <div class="bg-gray-100 px-4 py-2 border-b border-gray-300 font-semibold">
+                1. Get a User by ID
+            </div>
+            <!-- Scrollable content -->
+            <div class="overflow-auto p-4 flex-1 space-y-2">
+                <p><strong>Route:</strong></p>
+                <pre><code>GET /api/v1/users/&lt;int:id&gt;</code></pre>
+
+                <p><strong>Description:</strong> Retrieves a specific user by their unique ID.</p>
+
+                <p><strong>Parameters:</strong></p>
+                <p><code>id</code> (int): The unique identifier for the user you want to retrieve.</p>
+
+                <p><strong>Success Response:</strong></p>
+                <pre><code>Code: 200 OK
+Content:
+[
+  {
+    "id": 1,
+    "username": "john_doe",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "date_created": "2024-01-01T12:00:00Z"
+  }
+]</code></pre>
+
+                <p><strong>Error Response:</strong></p>
+                <pre><code>Code: 404 Not Found
+Content:
+{
+  "message": "User not found"
+}
+</code></pre>
+            </div>
+
+            <!-- Fixed Test API button -->
+            <div class="p-2 border-t border-gray-300 bg-gray-100 mt-auto flex gap-2">
+                <input id="userIdInput" type="number" placeholder="Enter User ID"
+                       class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="testUserBtn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition">
+                    Test on Hoppscotch
+                </button>
+            </div>
+        </div>
+
+        <!-- Second API Method: Get All Users -->
+        <div class="mb-6 border border-gray-300 rounded-lg flex flex-col h-[360px]">
+            <!-- Fixed title -->
+            <div class="bg-gray-100 px-4 py-2 border-b border-gray-300 font-semibold">
+                2. Get All Users
+            </div>
+            <!-- Scrollable content -->
+            <div class="overflow-auto p-4 flex-1 space-y-2">
+                <p><strong>Route:</strong></p>
+                <pre><code>GET /api/v1/users/</code></pre>
+
+                <p><strong>Description:</strong> Retrieves a list of all users.</p>
+
+                <p><strong>Parameters:</strong> None</p>
+
+                <p><strong>Success Response:</strong></p>
+                <pre><code>Code: 200 OK
+Content:
+[
+  {
+    "id": 1,
+    "username": "john_doe",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "john@example.com",
+    "date_created": "2024-01-01T12:00:00Z"
+  },
+  {
+    "id": 2,
+    "username": "jane_doe",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "email": "jane@example.com",
+    "date_created": "2024-01-02T12:00:00Z"
+  }
+]
+</code></pre>
+            </div>
+
+            <!-- Fixed Test API button -->
+            <div class="p-2 border-t border-gray-300 bg-gray-100 mt-auto flex gap-2">
+                <button id="testAllBtn"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded transition">
+                    Test on Hoppscotch
+                </button>
+            </div>
+        </div>
+
+        <!-- Back to Dashboard button at the bottom -->
+        <div class="mt-auto">
+            <a href="{{ url_for('dashboard') }}"
+               class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.getElementById('testUserBtn').addEventListener('click', () => {
+    const userId = document.getElementById('userIdInput').value.trim();
+    if (!userId) return alert("Please enter a User ID");
+    const url = `https://hoppscotch.io/?method=GET&url=${encodeURIComponent('https://project-one-ofo6.onrender.com/api/v1/users/' + userId)}`;
+    window.open(url, '_blank');
+});
+
+document.getElementById('testAllBtn').addEventListener('click', () => {
+    const url = `https://hoppscotch.io/?method=GET&url=${encodeURIComponent('https://project-one-ofo6.onrender.com/api/v1/users/')}`;
+    window.open(url, '_blank');
+});
+</script>
+{% endblock %}
