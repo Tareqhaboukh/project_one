@@ -1,58 +1,52 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen bg-gray-50">
-    <div class="w-[680px] h-[960px] p-8 bg-white rounded shadow flex flex-col justify-center">
+{% for message in get_flashed_messages() %}
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+    {{ message }}
+</div>    
+{% endfor %}
 
-        {% for message in get_flashed_messages() %}
-        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
-            {{ message }}
-        </div>    
-        {% endfor %}
+<h2 class="text-2xl font-bold mb-6 text-center">Welcome to Project One!</h2>
 
-        <h2 class="text-2xl font-bold mb-6 text-center">Welcome to Project One!</h2>
+<div class="bg-blue-50 border border-blue-200 text-blue-800 p-6 rounded-lg shadow mb-6">
+    <p class="font-semibold mb-2">Feel free to explore!</p>
+    <p>You can create a dummy account or log in as a guest user. Any changes you make are temporary and can be reset anytime from the main page. Go ahead and try things out with confidence.</p>
+</div>
 
-        <div class="bg-blue-50 border border-blue-200 text-blue-800 p-6 rounded-lg shadow mb-6">
-            <p class="font-semibold mb-2">Feel free to explore!</p>
-            <p>You can create a dummy account or log in as a guest user. Any changes you make are temporary and can be reset anytime from the main page. Go ahead and try things out with confidence.</p>
+{% if form %}
+    <form method="post" class="space-y-4">
+
+        {{ form.hidden_tag() }}
+
+        <div>
+            {{ form.username.label(class_="block font-medium") }}
+            {{ form.username(class_="border p-2 rounded w-full") }}
         </div>
 
-        {% if form %}
-            <form method="post" class="space-y-4">
+        <div>
+            {{ form.password.label(class_="block font-medium") }}
+            {{ form.password(class_="border p-2 rounded w-full") }}
+        </div>
+        
+        <div class="mt-6">
+            {{ form.submit(class_="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer") }}
+        </div>
+    </form>
 
-                {{ form.hidden_tag() }}
-
-                <div>
-                    {{ form.username.label(class_="block font-medium") }}
-                    {{ form.username(class_="border p-2 rounded w-full") }}
-                </div>
-
-                <div>
-                    {{ form.password.label(class_="block font-medium") }}
-                    {{ form.password(class_="border p-2 rounded w-full") }}
-                </div>
-                
-                <div class="mt-6">
-                    {{ form.submit(class_="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer") }}
-                </div>
-            </form>
-
-            <div class="mt-4">
-                <form action="{{ url_for('guest_login') }}" method="get">
-                    <p class="text-center text-gray-500 mb-4">or</p>
-                    <button type="submit"
-                            class="flex items-center justify-center gap-2 w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer">
-                        Login as Guest
-                    </button>
-                </form>
-            </div>
-
-            <div class="mt-4 text-center space-y-1">
-                <a href="{{ url_for('user_add') }}" class="text-blue-600 hover:underline">Create New User</a><br>
-                <a href="{{ url_for('reset_password') }}" class="text-blue-600 hover:underline">Reset Password</a><br>
-            </div>
-        {% endif %}
-
+    <div class="mt-4">
+        <form action="{{ url_for('guest_login') }}" method="get">
+            <p class="text-center text-gray-500 mb-4">or</p>
+            <button type="submit"
+                    class="flex items-center justify-center gap-2 w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer">
+                Login as Guest
+            </button>
+        </form>
     </div>
-</div>    
+
+    <div class="mt-4 text-center space-y-1">
+        <a href="{{ url_for('user_add') }}" class="text-blue-600 hover:underline">Create New User</a><br>
+        <a href="{{ url_for('reset_password') }}" class="text-blue-600 hover:underline">Reset Password</a><br>
+    </div>
+{% endif %} 
 {% endblock %}

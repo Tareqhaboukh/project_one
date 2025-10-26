@@ -1,61 +1,55 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen bg-gray-50">
-    <div class="w-[680px] h-[960px] p-8 bg-white rounded shadow flex flex-col">
+<h2 class="text-2xl font-bold mb-6 text-center">Vendors List</h2>
 
-        <h2 class="text-2xl font-bold mb-6 text-center">Vendors List</h2>
+<form method="POST" class="flex mb-4">
+    <input type="text" name="search" placeholder="Search by vendor name..."
+            value="{{ search_query }}"
+            class="flex-grow border p-2 rounded-l w-full">
+    <button type="submit"
+            class="bg-gray-500 hover:bg-gray-600 text-white px-4 rounded-r font-bold">
+        Search
+    </button>
+</form>
 
-        <form method="POST" class="flex mb-4">
-            <input type="text" name="search" placeholder="Search by vendor name..."
-                   value="{{ search_query }}"
-                   class="flex-grow border p-2 rounded-l w-full">
-            <button type="submit"
-                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 rounded-r font-bold">
-                Search
-            </button>
-        </form>
+<div class="flex-1 overflow-y-auto space-y-3">
+    {% if vendors %}
+        {% for vendor in vendors %}
+        <div class="border rounded p-4 shadow-sm hover:shadow-md transition flex justify-between items-center cursor-pointer"
+                onclick="window.location='{{ url_for('vendor_view', vendor_id=vendor.id) }}'">
 
-        <div class="flex-1 overflow-y-auto space-y-3">
-            {% if vendors %}
-                {% for vendor in vendors %}
-                <div class="border rounded p-4 shadow-sm hover:shadow-md transition flex justify-between items-center cursor-pointer"
-                     onclick="window.location='{{ url_for('vendor_view', vendor_id=vendor.id) }}'">
+            <div>
+                <p class="font-medium">{{ vendor.vendor_name }}</p>
+                <p class="text-gray-600 text-sm">{{ vendor.business_type }} — {{ vendor.city }}, {{ vendor.country }}</p>
+            </div>
 
-                    <div>
-                        <p class="font-medium">{{ vendor.vendor_name }}</p>
-                        <p class="text-gray-600 text-sm">{{ vendor.business_type }} — {{ vendor.city }}, {{ vendor.country }}</p>
-                    </div>
-
-                    <div class="ml-4 flex-shrink-0">
-                        <a href="{{ url_for('vendor_edit', vendor_id=vendor.id) }}"
-                           class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-1 px-3 rounded shadow-sm transition text-sm"
-                           onclick="event.stopPropagation();">
-                            Edit
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-center text-gray-500 mt-4">No vendors found.</p>
-            {% endif %}
+            <div class="ml-4 flex-shrink-0">
+                <a href="{{ url_for('vendor_edit', vendor_id=vendor.id) }}"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-1 px-3 rounded shadow-sm transition text-sm"
+                    onclick="event.stopPropagation();">
+                    Edit
+                </a>
+            </div>
         </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-center text-gray-500 mt-4">No vendors found.</p>
+    {% endif %}
+</div>
 
-        <div class="mt-6 space-y-2">
-            <a href="{{ url_for('vendor_add') }}"
-               class="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer">
-                Create a New Vendor
-            </a>
+<div class="mt-6 space-y-2">
+    <a href="{{ url_for('vendor_add') }}"
+        class="flex items-center justify-center gap-2 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded shadow-sm transition cursor-pointer">
+        Create a New Vendor
+    </a>
 
-            <a href="{{ url_for('dashboard') }}"
-               class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition cursor-pointer">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to Dashboard
-            </a>
-        </div>
-
-    </div>
+    <a href="{{ url_for('dashboard') }}"
+        class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition cursor-pointer">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Dashboard
+    </a>
 </div>
 {% endblock %}

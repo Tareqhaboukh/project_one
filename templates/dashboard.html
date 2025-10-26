@@ -1,78 +1,72 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen">
-    <div class="w-[680px] h-[960px] p-8 bg-white rounded shadow flex flex-col">
+{% for message in get_flashed_messages() %}
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+    {{ message }}
+</div>    
+{% endfor %}
 
-        {% for message in get_flashed_messages() %}
-        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
-            {{ message }}
-        </div>    
-        {% endfor %}
-
-        <!-- Welcome Section -->
-        <a href="{{ url_for('user_profile') }}" class="block hover:bg-gray-50 rounded-lg p-2 transition cursor-pointer">
-            <div class="flex justify-between items-start mb-6">
-                <div class="flex flex-col">
-                    <span class="text-xl font-semibold">Welcome</span>
-                    <span class="text-2xl font-bold">
-                        {{ current_user.first_name | title }} {{ current_user.last_name | title }}
-                    </span>
-                </div>
-
-                <div class="w-14 h-14 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-lg">
-                    {{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}
-                </div>
-            </div>
-        </a>
-
-        <!-- Navigation Buttons -->
-        <div class="flex-1 space-y-4">
-            <a href="{{ url_for('invoice_list') }}" 
-               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
-                Invoices
-            </a>
-
-            <a href="{{ url_for('vendor') }}" 
-               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
-                Vendors
-            </a>
-
-            <a href="{{ url_for('analytic') }}" 
-               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
-                Analytics
-            </a>
-
-            <a href="{{ url_for('api_docs') }}" 
-               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
-                API Documentation
-            </a>
-
-            <a href="{{ url_for('chatbot_page') }}" 
-               class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
-                Ask AI a Question
-            </a>
-
-            <div class="bg-green-50 border border-green-200 text-green-800 p-6 rounded-lg shadow">
-                <p class="font-semibold mb-2">Need a fresh start?</p>
-                <p>You can reset the app data anytime to restore it to its default state.</p>
-            </div>
-
-            <a href="{{ url_for('reset') }}" 
-               class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded block text-center">
-                Reset app data
-            </a>
+<!-- Welcome Section -->
+<a href="{{ url_for('user_profile') }}" class="block hover:bg-gray-50 rounded-lg p-2 transition cursor-pointer">
+    <div class="flex justify-between items-start mb-6">
+        <div class="flex flex-col">
+            <span class="text-xl font-semibold">Welcome</span>
+            <span class="text-2xl font-bold">
+                {{ current_user.first_name | title }} {{ current_user.last_name | title }}
+            </span>
         </div>
 
-        <!-- Logout Button at Bottom -->
-        <div class="mt-auto">
-            <a href="{{ url_for('logout') }}" 
-               class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
-                Logout
-            </a>
+        <div class="w-14 h-14 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold text-lg">
+            {{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}
         </div>
-
     </div>
+</a>
+
+<!-- Navigation Buttons -->
+<div class="flex-1 space-y-4">
+    <a href="{{ url_for('invoice_list') }}" 
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+        Invoices
+    </a>
+
+    <a href="{{ url_for('vendor') }}" 
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+        Vendors
+    </a>
+
+    <a href="{{ url_for('analytic') }}" 
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+        Analytics
+    </a>
+
+    <a href="{{ url_for('api_docs') }}" 
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+        API Documentation
+    </a>
+
+    <a href="{{ url_for('chatbot_page') }}" 
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded block text-center">
+        Ask AI a Question
+    </a>
+
+    <div class="bg-green-50 border border-green-200 text-green-800 p-6 rounded-lg shadow">
+        <p class="font-semibold mb-2">Need a fresh start?</p>
+        <p>You can reset the app data anytime to restore it to its default state.</p>
+    </div>
+
+    <a href="{{ url_for('reset') }}" 
+        class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded block text-center">
+        Reset app data
+    </a>
+</div>
+
+<!-- Logout Button at Bottom -->
+<div class="mt-auto">
+    <a href="{{ url_for('logout') }}" 
+        class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
+        Logout
+    </a>
 </div>
 
 <!-- Cloudflare Web Analytics -->

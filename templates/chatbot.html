@@ -1,36 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-screen bg-gray-50">
-  <div class="w-[680px] h-[960px] p-6 bg-white rounded-2xl shadow-lg flex flex-col">
+<h2 class="text-2xl font-bold mb-4 text-center">Chatbot</h2>
 
-    <h2 class="text-2xl font-bold mb-4 text-center">Chatbot</h2>
+<!-- Chat messages -->
+<div id="chat" class="flex-1 w-full overflow-y-auto border border-gray-200 rounded p-4 mb-4 bg-gray-50">
+  <!-- Messages will be rendered by JS -->
+</div>
 
-    <!-- Chat messages -->
-    <div id="chat" class="flex-1 w-full overflow-y-auto border border-gray-200 rounded p-4 mb-4 bg-gray-50">
-      <!-- Messages will be rendered by JS -->
-    </div>
+<!-- Input and send button -->
+<div class="w-full flex space-x-2">
+  <input id="question" type="text" placeholder="Ask a question..." 
+          class="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+  <button id="send" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+    Send
+  </button>
+</div>
 
-    <!-- Input and send button -->
-    <div class="w-full flex space-x-2">
-      <input id="question" type="text" placeholder="Ask a question..." 
-             class="flex-1 border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
-      <button id="send" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-        Send
-      </button>
-    </div>
-
-    <!-- Back button -->
-    <div class="mt-auto">
-      <a href="{{ url_for('dashboard') }}" class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition mt-6">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        Back to Dashboard
-      </a>
-    </div>
-
-  </div>
+<!-- Back button -->
+<div class="mt-auto">
+  <a href="{{ url_for('dashboard') }}" class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition mt-6">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+    Back to Dashboard
+  </a>
 </div>
 
 <script>

@@ -1,110 +1,104 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="flex items-center justify-center min-h-screen bg-gray-50">
-    <div class="w-[680px] h-[960px] p-8 bg-white rounded shadow flex flex-col">
+{% for message in get_flashed_messages() %}
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
+    {{ message }}
+</div>    
+{% endfor %}
 
-        {% for message in get_flashed_messages() %}
-        <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-2 rounded mb-4">
-            {{ message }}
-        </div>    
-        {% endfor %}
+<div class="flex justify-between items-start mb-6">
+    <div class="flex flex-col">
+        <span class="text-xl font-semibold">Welcome</span>
+        <span class="text-2xl font-bold">
+            {{ current_user.first_name | title }} {{ current_user.last_name | title }}
+        </span>
+        <span class="text-sm text-gray-600 mt-1">@{{ current_user.username }}</span>
+    </div>
 
-        <div class="flex justify-between items-start mb-6">
-            <div class="flex flex-col">
-                <span class="text-xl font-semibold">Welcome</span>
-                <span class="text-2xl font-bold">
-                    {{ current_user.first_name | title }} {{ current_user.last_name | title }}
-                </span>
-                <span class="text-sm text-gray-600 mt-1">@{{ current_user.username }}</span>
-            </div>
+    <div class="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-lg">
+        {{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}
+    </div>
+</div>
 
-            <div class="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-lg">
-                {{ current_user.first_name[0] | upper }}{{ current_user.last_name[0] | upper }}
-            </div>
-        </div>
+<!-- Scrollable content including User Actions -->
+<div class="flex-1 overflow-y-auto space-y-3 text-gray-800 text-sm border-t border-gray-200 pt-4">
+    <div class="flex justify-between">
+        <span class="font-semibold">User ID:</span>
+        <span>{{ current_user.id }}</span>
+    </div>
+    <div class="flex justify-between">
+        <span class="font-semibold">Username:</span>
+        <span>{{ current_user.username }}</span>
+    </div>
+    <div class="flex justify-between">
+        <span class="font-semibold">Email:</span>
+        <span>{{ current_user.email }}</span>
+    </div>
+    <div class="flex justify-between">
+        <span class="font-semibold">Account Created:</span>
+        <span>{{ current_user.date_created.strftime('%B %d, %Y %I:%M %p') if current_user.date_created else 'N/A' }}</span>
+    </div>
+    <div class="flex flex-col mb-2">
+        <span class="font-semibold">Password hash:</span>
+        <span class="break-all text-gray-700">{{ current_user.password_hash }}</span>
+    </div>
 
-        <!-- Scrollable content including User Actions -->
-        <div class="flex-1 overflow-y-auto space-y-3 text-gray-800 text-sm border-t border-gray-200 pt-4">
-            <div class="flex justify-between">
-                <span class="font-semibold">User ID:</span>
-                <span>{{ current_user.id }}</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="font-semibold">Username:</span>
-                <span>{{ current_user.username }}</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="font-semibold">Email:</span>
-                <span>{{ current_user.email }}</span>
-            </div>
-            <div class="flex justify-between">
-                <span class="font-semibold">Account Created:</span>
-                <span>{{ current_user.date_created.strftime('%B %d, %Y %I:%M %p') if current_user.date_created else 'N/A' }}</span>
-            </div>
-            <div class="flex flex-col mb-2">
-                <span class="font-semibold">Password hash:</span>
-                <span class="break-all text-gray-700">{{ current_user.password_hash }}</span>
-            </div>
+    <!-- Collapsible User Actions inside scrollable area -->
+    <div x-data="{ open: false }" class="mt-4">
+        <button 
+            @click="open = !open"
+            class="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded flex justify-between items-center"
+        >
+            User Actions
+            <svg :class="{ 'rotate-180': open }" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
 
-            <!-- Collapsible User Actions inside scrollable area -->
-            <div x-data="{ open: false }" class="mt-4">
-                <button 
-                    @click="open = !open"
-                    class="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded flex justify-between items-center"
-                >
-                    User Actions
-                    <svg :class="{ 'rotate-180': open }" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </button>
+        <div 
+            x-ref="panel"
+            :style="open ? 'max-height: ' + $refs.panel.scrollHeight + 'px' : 'max-height: 0px'"
+            class="overflow-hidden transition-all duration-300 ease-in-out mt-2 space-y-2"
+        >
+            <a href="{{ url_for('users') }}" 
+                class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
+                Users List
+            </a>
 
-                <div 
-                    x-ref="panel"
-                    :style="open ? 'max-height: ' + $refs.panel.scrollHeight + 'px' : 'max-height: 0px'"
-                    class="overflow-hidden transition-all duration-300 ease-in-out mt-2 space-y-2"
-                >
-                    <a href="{{ url_for('users') }}" 
-                       class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
-                       Users List
-                    </a>
+            <a href="{{ url_for('user_edit') }}" 
+                class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
+                {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
+                Edit User
+            </a>
 
-                    <a href="{{ url_for('user_edit') }}" 
-                       class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
-                       {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
-                       Edit User
-                    </a>
+            <a href="{{ url_for('change_password') }}" 
+                class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
+                {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
+                Change Password
+            </a>
 
-                    <a href="{{ url_for('change_password') }}" 
-                       class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
-                       {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
-                       Change Password
-                    </a>
+            <a href="{{ url_for('logout') }}" 
+                class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
+                Logout
+            </a>
 
-                    <a href="{{ url_for('logout') }}" 
-                       class="block bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded w-full text-center">
-                       Logout
-                    </a>
-
-                    <a href="{{ url_for('user_delete', id=current_user.id) }}" 
-                       class="block bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
-                       {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
-                       Delete User
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Back to Dashboard fixed at bottom -->
-        <div class="mt-4">
-            <a href="{{ url_for('dashboard') }}"
-               class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                Back to Dashboard
+            <a href="{{ url_for('user_delete', id=current_user.id) }}" 
+                class="block bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded w-full text-center {% if session.get('is_guest') %}opacity-50 cursor-not-allowed{% endif %}" 
+                {% if session.get('is_guest') %}onclick="return false;"{% endif %}>
+                Delete User
             </a>
         </div>
-
     </div>
+</div>
+
+<!-- Back to Dashboard fixed at bottom -->
+<div class="mt-4">
+    <a href="{{ url_for('dashboard') }}"
+        class="flex items-center justify-center gap-2 w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded shadow-sm transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Dashboard
+    </a>
 </div>
 {% endblock %}
