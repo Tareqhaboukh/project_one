@@ -55,6 +55,12 @@
 
 <!-- Plotly -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+        data-cf-beacon='{"token": "54b0b08ba67148b891d5416396746948"}'></script>
+<!-- End Cloudflare Web Analytics -->
+
 <script>
 const barData = {{ bar_data | tojson }};
 const barGraphDiv = document.getElementById('barGraph');
